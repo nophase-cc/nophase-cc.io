@@ -13,14 +13,15 @@
       <div class="row">
         <div class="col-lg-8 col-lg-offset-2">
           <div class="modal-body">
+
             <h2>{{ post.title }}</h2>
             <hr class="star-primary">
-            <img src="img/portfolio/{{ post.img }}" class="img-responsive img-centered" alt="{{ post.alt }}">
-            {% if post.description %}
+            <!-- <img src="img/portfolio/{{ post.img }}" class="img-responsive img-centered" alt="{{ post.alt }}"> -->
+
+            <!-- {% if post.description %}
             <p>{{ post.description }}</p>
-            {% endif %}
-            <script src="https://gumroad.com/js/gumroad-embed.js"></script>
-            <div class="gumroad-product-embed"><a href="https://nophase.gumroad.com/l/DIRT">Loading...</a></div>
+            {% endif %} -->
+            
             <ul class="list-inline item-details">
               {% if post.client %}
               <li>Client:
@@ -38,6 +39,10 @@
               </li>
               {% endif %}
             </ul>
+
+            <script src="https://gumroad.com/js/gumroad-embed.js"></script>
+            <div class="gumroad-product-embed"><a href="https://nophase.gumroad.com/l/{{ post.gumroad }}">Loading...</a></div>
+
             <button type="button" class="btn btn-default" data-dismiss="modal">BACK</button>
           </div>
         </div>
