@@ -8,6 +8,5 @@ project-date: June 2024
 client: Start Bootstrap
 category: Web Development
 description: testing
-<script src="https://gumroad.com/js/gumroad-embed.js"></script>
-<div class="gumroad-product-embed"><a href="https://nophase.gumroad.com/l/DIRT">Loading...</a></div>
+asdfasdfasdfasdfasdfasdfasdf
 ---
