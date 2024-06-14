@@ -4,7 +4,7 @@ email: charles@nophase.cc
 url: https://nophase.cc
 description: "we make bad plugins in the best way"
 keywords: "music, music production, ableton, max for live, m4l, producer, music producer, vst, plugin, edm, "
-skills: "testing"
+skills: "a bad device maker"
 meta_author: Lewis Charles
 
 # Google webmaster tools
@@ -26,7 +26,7 @@ disqus_shortname: myshortname
 # Color settings (hex-codes without the leading hash-tag)
 color:
   primary: 747642 #80B3FF
-  primary-rgb: 0,0,0 #"128,179,255" #"24,288,156" #"128,179,255"
+  primary-rgb: 116,118,66 #"128,179,255" #"24,288,156" #"128,179,255"
   secondary: eeeeee #FD6E8A
   secondary-dark: 1b1b0f #A2122F
 
