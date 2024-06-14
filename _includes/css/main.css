@@ -45,6 +45,7 @@ hr.star-primary {
     border-top: solid 5px;
     text-align: center;
     overflow: visible;
+    color: black;
 }
 
 hr.star-light:after,
@@ -82,13 +83,14 @@ hr.star-primary:after {
 
 header {
     text-align: center;
-    color: #fff;
+    color: black;
     background: #{{ site.color.primary }};
 }
 
 header .container {
     padding-top: 100px;
     padding-bottom: 50px;
+    color: black;
 }
 
 header img {
@@ -281,9 +283,9 @@ section.success {
 
 .btn-outline {
     margin-top: 15px;
-    border: solid 2px #fff;
+    border: solid 2px black;
     font-size: 20px;
-    color: #fff;
+    color: black;
     background: 0 0;
     transition: all .3s ease-in-out;
 }
@@ -354,7 +356,7 @@ form .row:first-child .floating-label-form-group {
 }
 
 footer {
-    color: #fff;
+    color: black;
 }
 
 footer h3 {
