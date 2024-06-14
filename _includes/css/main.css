@@ -166,6 +166,7 @@ header .intro-text .skills {
 
 .navbar .navbar-nav li a:focus {
     outline: 0;
+    color: black;
 }
 
 .navbar-default,
