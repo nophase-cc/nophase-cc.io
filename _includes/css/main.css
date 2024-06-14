@@ -44,7 +44,7 @@ hr.star-primary {
     border: 0;
     border-top: solid 5px;
     text-align: center;
-    overflow: visible;
+    /* overflow: visible; */
     color: black;
 }
 
@@ -172,6 +172,7 @@ header .intro-text .skills {
 .navbar-default,
 .navbar-inverse {
     border: 0;
+    color: black;
 }
 
 section {
@@ -476,6 +477,7 @@ footer .footer-below {
 }
 
 .navbar-nav>.active>a {
+    color: black;
     background-color: #{{ site.color.secondary-dark }} !important;
 }
 
