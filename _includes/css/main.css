@@ -48,7 +48,7 @@ hr.star-primary {
     color: black;
 }
 
-hr.star-light:after,
+/* hr.star-light:after,
 hr.star-primary:after {
     content: "\f005";
     display: inline-block;
@@ -57,7 +57,7 @@ hr.star-primary:after {
     padding: 0 .25em;
     font-family: FontAwesome;
     font-size: 2em;
-}
+} */
 
 hr.star-light {
     border-color: #fff;
