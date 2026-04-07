@@ -1,0 +1,16 @@
+#  The contact options.
+
+- type: github
+  icon: "fab fa-github"
+
+- type: youtube
+  icon: "fab fa-youtube"
+  url: "https://www.youtube.com/@nophasecc"
+
+- type: soundcloud
+  icon: "fab fa-soundcloud"
+  url: "https://soundcloud.com/nophase"
+
+- type: bandcamp
+  icon: "fab fa-bandcamp"
+  url: "https://nophase.bandcamp.com"

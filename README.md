@@ -1,32 +1,33 @@
-Freelancer Jekyll theme  
-=========================
+# NOPHASE Site
 
-Jekyll theme based on [Freelancer bootstrap theme ](http://startbootstrap.com/template-overviews/freelancer/)
+Portfolio + organization site for Nophase projects (VSTs, Max for Live devices,
+MIDI tools, and audio experiments), built on the Chirpy Jekyll theme.
 
-## How to use
- - Place a image in `/img/portfolio/`
- - Replace `your-email@domain.com` in `_config.yml` with your email address. Refer to [formspree](http://formspree.io/) for more information.
- - Create posts to display your projects. Use the follow as an example:
-```txt
----
-layout: default
-modal-id: 1
-date: 2020-01-18
-img: cabin.png
-alt: image-alt
-project-date: January 2020
-client: The Client
-category: Web Development
-description: The description of the project
+## Local Preview (Before You Push)
 
----
-```
+1. Install dependencies once:
 
-## Demo
-View this jekyll theme in action [here](https://jeromelachaud.com/freelancer-theme)
+   ```bash
+   ./scripts/setup
+   ```
 
-## Screenshot
-![screenshot](https://raw.githubusercontent.com/jeromelachaud/freelancer-theme/master/screenshot.png)
+2. Start local server:
 
----------
-For more details, read the [documentation](http://jekyllrb.com/)
+   ```bash
+   ./scripts/dev
+   ```
+
+3. Open:
+
+   ```text
+   http://127.0.0.1:4000
+   ```
+
+The server uses `--incremental` for faster rebuilds while you develop.
+
+## Typical Workflow
+
+1. Make edits.
+2. Run `./scripts/dev` and verify locally.
+3. Commit only when it looks right.
+4. Push to GitHub.
