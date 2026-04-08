@@ -15,7 +15,10 @@ destruction, rhythmic motion, and aggressive but playable timbral control.
 Prototype in active iteration.
 
 ## Format
-- AU/VST
+- Native JUCE audio plugin
+- Current target: stereo VST3 effect
+- Built around tempo-synced random modulation and custom UI workflows
+- Public docs reflect the active prototype snapshot rather than a finished release
 
 ## Core Modules
 - HEAT

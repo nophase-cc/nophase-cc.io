@@ -1,29 +1,50 @@
 ---
-layout: page
+layout: default
 title: NOPHASE
 permalink: /
 ---
+<br>
+<section class="landing-viewport" aria-labelledby="landing-title">
+  <div class="landing-ambient" aria-hidden="true">
+    <span class="landing-glow landing-glow-a"></span>
+    <span class="landing-glow landing-glow-b"></span>
+    <span class="landing-scanlines"></span>
+  </div>
 
-## Welcome to NOPHASE.CC
+  <div class="landing-hero">
+    <div class="landing-copyblock">
+      <p class="landing-kicker">Creative instability</p>
+      <h1 id="landing-title">NOPHASE</h1>
+      <p class="landing-copy">
+        Plugins and music tools built for motion, texture, and the kind of
+        happy accidents worth keeping.
+      </p>
+    </div>
 
-Welcome to NOPHASE.CC, where chaos and unpredictability reign supreme.
-Our Max for Live devices and audio tools are known for quirks, glitches, and
-happy accidents that break away from conventional processing.
+    <div class="landing-gallery" aria-label="Featured plugin screenshots">
+      <figure class="landing-panel landing-panel-primary">
+        <img
+          src="/assets/img/projects/destroytion-2.png"
+          alt="Destroytion plugin interface"
+          loading="eager"
+        >
+      </figure>
 
-These tools are not about pristine perfection. They are built to embrace
-imperfection, randomness, and disorder so artists can carve out raw, uncommon
-sonic identities.
+      <figure class="landing-panel landing-panel-secondary">
+        <img
+          src="/assets/img/projects/bleap-2.png"
+          alt="Bleap plugin interface"
+          loading="eager"
+        >
+      </figure>
 
-At NOPHASE.CC, creativity comes from breaking rules and pushing boundaries.
-From warped textures to bizarre rhythms, this platform is designed for
-producers and sound designers who want to explore beyond safe defaults.
-
-Join a community of adventurous creators, share experiments, and help shape
-new directions for sound.
-
-### Current Projects
-- Destroytion (AU/VST)
-- Dirt (Max Device)
-- Bleap (AU/VST)
-- Midi Brain (Other)
-- CCGROOVE (Other)
+      <div class="landing-signal" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+</section>

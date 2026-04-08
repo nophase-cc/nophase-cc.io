@@ -27,6 +27,9 @@
       </li>
       <!-- the real tabs -->
       {% for tab in site.tabs %}
+        {% if tab.title == 'resume' %}
+          {% continue %}
+        {% endif %}
         <li class="nav-item{% if tab.url == page.url %}{{ " active" }}{% endif %}">
           <a href="{{ tab.url | relative_url }}" class="nav-link">
             <i class="fa-fw {{ tab.icon }}"></i>
@@ -39,6 +42,17 @@
       {% endfor %}
     </ul>
   </nav>
+
+  <div class="sidebar-resume-link w-100">
+    <ul class="nav">
+     <li class="nav-item{% if tab.url == page.url %}{{ " active" }}{% endif %}">
+        <a href="{{ '/resume/' | relative_url }}" class="nav-link{% if page.url == '/resume/' %} active{% endif %}">
+          <i class="fa-fw fas fa-file-lines"></i>
+          <span>{{ site.data.locales[include.lang].tabs.resume | upcase }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 
   <div class="sidebar-bottom d-flex flex-wrap  align-items-center w-100">
     {% unless site.theme_mode %}

@@ -15,5 +15,9 @@ class SidebarUtil {
 }
 
 export function initSidebar() {
+  if (!$trigger || !$mask) {
+    return;
+  }
+
   $trigger.onclick = $mask.onclick = () => SidebarUtil.toggle();
 }

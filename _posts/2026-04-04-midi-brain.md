@@ -16,7 +16,10 @@ control so the performer can stay focused on playing.
 Functional prototype with web UI and live routing.
 
 ## Format
-- Other
+- Raspberry Pi-hosted MIDI middleware application
+- Hardware-first tool for controller routing, clock handling, and live setup logic
+- Includes a FastAPI web interface for monitoring and editing
+- Designed to run outside a DAW-centered workflow
 
 ## Current Direction
 - Live MIDI router with transport and clock handling
