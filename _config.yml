@@ -16,7 +16,7 @@ timezone: America/Los_Angeles
 
 title: NOPHASE
 
-tagline: Portfolio and tools for music makers
+tagline: Bad Tools
 
 description: >- # used by seo meta and the atom feed
   NOPHASE is a project hub for music software and creative tools:
@@ -39,7 +39,7 @@ social:
   links:
     - https://nophase.cc
     - https://github.com/nophase-cc
-    - https://www.instagram.com/nophase.cc
+    - https://www.instagram.com/cc.wav_
 
 # Site Verification Settings
 webmaster_verifications:
