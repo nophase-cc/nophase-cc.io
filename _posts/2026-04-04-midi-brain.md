@@ -12,23 +12,25 @@ Midi Brain is a performance-first MIDI middleware app running on Raspberry Pi.
 It sits between controllers and instruments, handling intelligent routing and
 control so the performer can stay focused on playing.
 
-## Status
-Functional prototype with web UI and live routing.
+## Snapshot
+- Status: functional prototype with web UI and live routing
+- Format: Raspberry Pi-hosted MIDI middleware application
+- Stack: Python, FastAPI, and JSON-backed config
+- Focus: controller-first live performance without DAW dependency
 
-## Format
-- Raspberry Pi-hosted MIDI middleware application
-- Hardware-first tool for controller routing, clock handling, and live setup logic
-- Includes a FastAPI web interface for monitoring and editing
-- Designed to run outside a DAW-centered workflow
-
-## Current Direction
+## What It Is
 - Live MIDI router with transport and clock handling
 - Macro engine for one-to-many parameter control
 - FastAPI web UI for setup, monitoring, and editing
 - Scene-based workflow planning for performance states
 
-## Target Use
-Controller-first live performance without DAW dependency.
+## Current Direction
+- Expand transform runtime beyond direct macro expansion
+- Deepen scene recall and performance-state management
+- Improve controller feedback and hardware integration
 
 ## Documentation
+This page is the project overview. The runtime architecture, routing model, and
+implementation details live in the docs.
+
 - [Midi Brain Docs](/documentation/midi-brain/)

@@ -5,7 +5,7 @@
 
 - type: youtube
   icon: "fab fa-youtube"
-  url: "https://www.youtube.com/@@cc.nophase"
+  url: "https://www.youtube.com/@cc.nophase"
 
 - type: soundcloud
   icon: "fab fa-soundcloud"
@@ -13,4 +13,4 @@
 
 - type: bandcamp
   icon: "fab fa-bandcamp"
-  url: "https://nophase.bandcamp.com"
+  url: "https://ccwav.bandcamp.com"
