@@ -1,0 +1,17 @@
+---
+sitemap: false
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting…</title>
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="{{ page.redirect_to | absolute_url }}">
+    <meta http-equiv="refresh" content="0; url={{ page.redirect_to | relative_url }}">
+    <script>location.replace({{ page.redirect_to | relative_url | jsonify }} + location.hash);</script>
+  </head>
+  <body style="background:#0b0b0e;color:#c8c8d0;font-family:system-ui,sans-serif;padding:2rem">
+    <p>This page moved. <a href="{{ page.redirect_to | relative_url }}" style="color:#ff8a4c">Continue to the new location</a>.</p>
+  </body>
+</html>

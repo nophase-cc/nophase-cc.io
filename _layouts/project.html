@@ -1,0 +1,78 @@
+---
+layout: default
+panel_includes:
+  - toc
+---
+
+{% include lang.html %}
+
+{% include toc-status.html %}
+
+<article class="px-1 project-page" data-toc="{{ enable_toc }}"{% if page.accent %} style="--project-accent: {{ page.accent }};"{% endif %}>
+  <header class="project-header">
+    <p class="project-crumb" data-toc-skip>
+      <a href="{{ '/projects/' | relative_url }}"><i class="fas fa-arrow-left fa-fw"></i> Projects</a>
+    </p>
+
+    <h1 data-toc-skip>{{ page.title }}</h1>
+
+    {% if page.description %}
+      <p class="post-desc fw-light mb-3">{{ page.description }}</p>
+    {% endif %}
+
+    <ul class="project-chips" data-toc-skip>
+      {% if page.status %}<li class="chip chip-status">{{ page.status }}</li>{% endif %}
+      {% if page.kind %}<li class="chip">{{ page.kind }}</li>{% endif %}
+      {% if page.format %}<li class="chip">{{ page.format }}</li>{% endif %}
+      {% if page.stack %}<li class="chip">{{ page.stack }}</li>{% endif %}
+    </ul>
+
+    <p class="project-jump" data-toc-skip>
+      <a href="#technical-docs"><i class="fas fa-book fa-fw"></i> Jump to technical docs</a>
+    </p>
+  </header>
+
+  {% if enable_toc %}
+    <div id="toc-bar" class="d-flex align-items-center justify-content-between invisible">
+      <span class="label text-truncate">{{ page.title }}</span>
+      <button type="button" class="toc-trigger btn me-1">
+        <i class="fa-solid fa-list-ul fa-fw"></i>
+      </button>
+    </div>
+
+    <button id="toc-solo-trigger" type="button" class="toc-trigger btn btn-outline-secondary btn-sm">
+      <span class="label ps-2 pe-1">{{- site.data.locales[lang].panel.toc -}}</span>
+      <i class="fa-solid fa-angle-right fa-fw"></i>
+    </button>
+
+    <dialog id="toc-popup" class="p-0">
+      <div class="header d-flex flex-row align-items-center justify-content-between">
+        <div class="label text-truncate py-2 ms-4">{{- page.title -}}</div>
+        <button id="toc-popup-close" type="button" class="btn mx-1 my-1 opacity-75">
+          <i class="fas fa-close"></i>
+        </button>
+      </div>
+      <div id="toc-popup-content" class="px-4 py-3 pb-4"></div>
+    </dialog>
+  {% endif %}
+
+  <div class="content">
+    {{ content }}
+  </div>
+
+  {% if page.tags.size > 0 %}
+    <div class="post-tail-wrapper text-muted">
+      <div class="post-tags">
+        <i class="fa fa-tags fa-fw me-1"></i>
+        {% for tag in page.tags %}
+          <a
+            href="{{ site.baseurl }}/tags/{{ tag | slugify | url_encode }}/"
+            class="post-tag no-text-decoration"
+          >
+            {{- tag -}}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</article>

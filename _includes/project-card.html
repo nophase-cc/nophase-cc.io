@@ -1,0 +1,27 @@
+{%- comment -%}
+  A single project card. Usage: {% include project-card.html project=post %}
+{%- endcomment -%}
+{%- assign p = include.project -%}
+<a
+  class="project-card"
+  href="{{ p.url | relative_url }}"
+  data-kind="{{ p.categories[1] | default: 'Other' | slugify }}"
+  {% if p.accent %}style="--project-accent: {{ p.accent }};"{% endif %}
+>
+  <span class="project-card-media">
+    {%- if p.thumb -%}
+      <span class="project-card-img" style="background-image: url('{{ p.thumb | relative_url }}')"></span>
+    {%- else -%}
+      <span class="project-card-glyph" aria-hidden="true">{{ p.title | slice: 0, 1 }}</span>
+    {%- endif -%}
+  </span>
+  <span class="project-card-body">
+    <span class="project-card-meta">
+      <span class="chip chip-status">{{ p.status }}</span>
+      <span class="chip">{{ p.kind }}</span>
+    </span>
+    <span class="project-card-title">{{ p.title }}</span>
+    <span class="project-card-desc">{{ p.description }}</span>
+    <span class="project-card-foot">{{ p.stack }}</span>
+  </span>
+</a>

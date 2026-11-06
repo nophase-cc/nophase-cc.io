@@ -34,8 +34,8 @@ artists, and workflow-focused creators.
 
 ## Current Projects
 
-- Destroytion
-- Dirt
-- Bleap
-- Midi Brain
-- CCGROOVE
+- [Destroytion](/projects/destroytion/)
+- [Dirt](/projects/dirt/)
+- [Bleap](/projects/bleap/)
+- [Midi Brain](/projects/midi-brain/)
+- [CCGROOVE](/projects/ccgroove/)

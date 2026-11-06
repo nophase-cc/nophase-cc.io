@@ -1,0 +1,98 @@
+# Start page (home) configuration.
+#
+# `search` is where text that doesn't match a link goes. Use {q} for the query.
+# Prefixes let you pick an engine: "g cats", "yt synth", "gh jucelib", ...
+search:
+  default: https://duckduckgo.com/?q={q}
+  label: DuckDuckGo
+  prefixes:
+    g: https://www.google.com/search?q={q}
+    ddg: https://duckduckgo.com/?q={q}
+    yt: https://www.youtube.com/results?search_query={q}
+    gh: https://github.com/search?q={q}
+    mdn: https://developer.mozilla.org/en-US/search?q={q}
+    fs: https://freesound.org/search/?q={q}
+    kvr: https://www.kvraudio.com/search?q={q}
+
+# Link groups shown on the home page. Edit freely: `name`, `url`, `icon` (Font
+# Awesome class) and optional `keys` (extra words the launcher should match).
+# NOPHASE's own pages and socials live in the sidebar and project cards, so
+# this list is for everything else.
+groups:
+  - title: Plugin & DSP
+    links:
+      - { name: JUCE Docs, url: "https://docs.juce.com", icon: fas fa-book, keys: api cpp plugin }
+      - { name: JUCE Forum, url: "https://forum.juce.com", icon: fas fa-comments, keys: help }
+      - { name: VST3 Dev Portal, url: "https://steinbergmedia.github.io/vst3_dev_portal/pages/", icon: fas fa-plug, keys: steinberg sdk }
+      - { name: CLAP, url: "https://cleveraudio.org", icon: fas fa-hand-fist, keys: plugin format sdk }
+      - { name: pluginval, url: "https://github.com/Tracktion/pluginval", icon: fas fa-circle-check, keys: test validate vst }
+      - { name: Audio EQ Cookbook, url: "https://www.w3.org/TR/audio-eq-cookbook/", icon: fas fa-chart-line, keys: biquad filter dsp }
+      - { name: JOS DSP Books, url: "https://ccrma.stanford.edu/~jos/", icon: fas fa-graduation-cap, keys: julius smith ccrma filters }
+      - { name: EarLevel, url: "https://www.earlevel.com/main/", icon: fas fa-wave-square, keys: dsp oscillator filter nigel }
+      - { name: musicdsp.org, url: "https://www.musicdsp.org", icon: fas fa-code, keys: snippets algorithms }
+
+  - title: Max, MIDI & Apps
+    links:
+      - { name: Max Docs, url: "https://docs.cycling74.com", icon: fas fa-diagram-project, keys: cycling74 msp m4l gen }
+      - { name: Cycling '74 Forums, url: "https://cycling74.com/forums", icon: fas fa-comments, keys: max help }
+      - { name: MIDI.org, url: "https://www.midi.org", icon: fas fa-music, keys: spec standard midi 2.0 }
+      - { name: mido, url: "https://mido.readthedocs.io", icon: fas fa-plug, keys: python midi }
+      - { name: FastAPI, url: "https://fastapi.tiangolo.com", icon: fas fa-bolt, keys: python api }
+      - { name: SwiftUI, url: "https://developer.apple.com/documentation/swiftui", icon: fab fa-apple, keys: apple ios macos swift }
+      - { name: AudioKit, url: "https://www.audiokit.io", icon: fas fa-headphones, keys: swift audio }
+      - { name: Raspberry Pi Docs, url: "https://www.raspberrypi.com/documentation/", icon: fas fa-microchip, keys: pi hardware }
+
+  - title: Music & Gear
+    links:
+      - { name: KVR Audio, url: "https://www.kvraudio.com", icon: fas fa-puzzle-piece, keys: plugins vst news }
+      - { name: Gearspace, url: "https://gearspace.com", icon: fas fa-comments, keys: forum mixing }
+      - { name: Lines, url: "https://llllllll.co", icon: fas fa-seedling, keys: llllllll norns monome community }
+      - { name: Elektronauts, url: "https://www.elektronauts.com", icon: fas fa-sliders, keys: elektron digitakt octatrack }
+      - { name: MuffWiggler, url: "https://www.muffwiggler.com", icon: fas fa-plug-circle-bolt, keys: modular eurorack forum }
+      - { name: ModBang, url: "https://www.modbang.com/resources", icon: fas fa-toolbox, keys: elektron tools }
+      - { name: Vintage Synth Explorer, url: "https://www.vintagesynth.com", icon: fas fa-keyboard, keys: synths history }
+      - { name: Sound On Sound, url: "https://www.soundonsound.com", icon: fas fa-newspaper, keys: sos magazine }
+
+  - title: Sound & Theory
+    links:
+      - { name: Freesound, url: "https://freesound.org", icon: fas fa-water, keys: samples fx }
+      - { name: musictheory.net, url: "https://www.musictheory.net", icon: fas fa-graduation-cap, keys: lessons ear training }
+      - { name: Hooktheory, url: "https://www.hooktheory.com/theorytab", icon: fas fa-hashtag, keys: chords songs analysis }
+      - { name: WeAreTheMusicMakers, url: "https://www.reddit.com/r/WeAreTheMusicMakers/", icon: fab fa-reddit, keys: reddit }
+      - { name: r/audioengineering, url: "https://www.reddit.com/r/audioengineering/", icon: fab fa-reddit, keys: reddit mixing }
+      - { name: r/edmproduction, url: "https://www.reddit.com/r/edmproduction/", icon: fab fa-reddit, keys: reddit }
+
+  - title: Homelab
+    links:
+      - { name: Proxmox Docs, url: "https://pve.proxmox.com/pve-docs/", icon: fas fa-server, keys: pve vm virtualization }
+      - { name: Docker Docs, url: "https://docs.docker.com", icon: fab fa-docker, keys: containers compose }
+      - { name: Tailscale Docs, url: "https://tailscale.com/kb", icon: fas fa-network-wired, keys: vpn mesh }
+      - { name: Home Assistant, url: "https://www.home-assistant.io/docs/", icon: fas fa-house-signal, keys: automation iot }
+      - { name: awesome-selfhosted, url: "https://awesome-selfhosted.net", icon: fas fa-list-check, keys: apps }
+      - { name: selfh.st, url: "https://selfh.st", icon: fas fa-newspaper, keys: news selfhosted }
+      - { name: r/homelab, url: "https://www.reddit.com/r/homelab/", icon: fab fa-reddit, keys: reddit }
+      - { name: r/selfhosted, url: "https://www.reddit.com/r/selfhosted/", icon: fab fa-reddit, keys: reddit }
+      - { name: Cloudflare, url: "https://dash.cloudflare.com", icon: fab fa-cloudflare, keys: dns tunnel dashboard }
+
+  - title: Security & Net
+    links:
+      - { name: CyberChef, url: "https://gchq.github.io/CyberChef/", icon: fas fa-hat-wizard, keys: decode encode gchq }
+      - { name: VirusTotal, url: "https://www.virustotal.com", icon: fas fa-virus, keys: malware scan hash }
+      - { name: Shodan, url: "https://www.shodan.io", icon: fas fa-satellite-dish, keys: scan internet }
+      - { name: AbuseIPDB, url: "https://www.abuseipdb.com", icon: fas fa-ban, keys: ip reputation }
+      - { name: crt.sh, url: "https://crt.sh", icon: fas fa-certificate, keys: certificate transparency tls }
+      - { name: MITRE ATT&CK, url: "https://attack.mitre.org", icon: fas fa-shield-halved, keys: ttp threat }
+      - { name: Have I Been Pwned, url: "https://haveibeenpwned.com", icon: fas fa-user-shield, keys: breach hibp }
+      - { name: Cloudflare Radar, url: "https://radar.cloudflare.com", icon: fas fa-chart-area, keys: traffic ddos outages }
+
+  - title: Code Reference
+    links:
+      - { name: MDN, url: "https://developer.mozilla.org", icon: fab fa-firefox-browser, keys: web js css html }
+      - { name: cppreference, url: "https://en.cppreference.com", icon: fas fa-book-open, keys: c++ stl }
+      - { name: Compiler Explorer, url: "https://godbolt.org", icon: fas fa-microscope, keys: godbolt assembly }
+      - { name: Python Docs, url: "https://docs.python.org/3/", icon: fab fa-python }
+      - { name: regex101, url: "https://regex101.com", icon: fas fa-asterisk, keys: regular expressions }
+      - { name: crontab.guru, url: "https://crontab.guru", icon: fas fa-clock, keys: cron schedule }
+      - { name: explainshell, url: "https://explainshell.com", icon: fas fa-terminal, keys: bash command }
+      - { name: DevDocs, url: "https://devdocs.io", icon: fas fa-file-code, keys: api offline }
+      - { name: Can I Use, url: "https://caniuse.com", icon: fas fa-globe, keys: browser support }
