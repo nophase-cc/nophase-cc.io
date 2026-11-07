@@ -38,6 +38,7 @@ jobs:
           ruby-version: 3.4
 
       - name: Fetch feeds
+        timeout-minutes: 3
         run: ruby scripts/fetch-feeds.rb --out "$RUNNER_TEMP/feed-data/feed.json"
 
       - name: Publish to feed-data branch

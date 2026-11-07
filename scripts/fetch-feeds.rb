@@ -15,12 +15,17 @@ require 'net/http'
 require 'optparse'
 require 'rexml/document'
 require 'time'
+require 'timeout'
 require 'uri'
 require 'yaml'
 
 ROOT = File.expand_path('..', __dir__)
 USER_AGENT = 'nophase.cc feed builder (+https://nophase.cc)'
 TITLE_MAX = 160
+# Hard limits. Net::HTTP's read timeout resets on every chunk, so a server that
+# drip-feeds (common towards datacenter IPs) can stall a fetch for minutes.
+SOURCE_TIMEOUT = 25 # seconds per source: fetch + parse
+TOTAL_TIMEOUT = 90  # seconds for the whole run; stragglers are dropped
 ENTITIES = {
   'amp' => '&', 'lt' => '<', 'gt' => '>', 'quot' => '"', 'apos' => "'", 'nbsp' => ' ',
   'ndash' => '–', 'mdash' => '—', 'lsquo' => '‘', 'rsquo' => '’', 'ldquo' => '“', 'rdquo' => '”',
@@ -148,16 +153,27 @@ jobs = config.fetch('columns').flat_map do |col|
   col.fetch('sources').map { |src| { col: col['title'], src: src } }
 end
 
+def now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+started = now
 threads = jobs.map do |job|
   Thread.new do
-    items = parse(fetch(job[:src]['feed']), job[:src])
+    t0 = now
+    items = Timeout.timeout(SOURCE_TIMEOUT) { parse(fetch(job[:src]['feed']), job[:src]) }
     items = items.sort_by { |i| -(i['date']&.to_i || 0) }.first(per_source)
+    puts format('  ok %-18s %4.1fs', job[:src]['name'], now - t0)
     job.merge(items: items)
   rescue StandardError, REXML::ParseException => e
-    job.merge(items: [], error: "#{e.class}: #{e.message}".lines.first.strip)
+    job.merge(items: [], error: "#{e.class}: #{e.message}".lines.first.to_s.strip)
   end
 end
-results = threads.map(&:value)
+results = threads.each_with_index.map do |t, i|
+  left = TOTAL_TIMEOUT - (now - started)
+  next t.value if left.positive? && t.join(left)
+
+  t.kill
+  jobs[i].merge(items: [], error: "gave up after #{TOTAL_TIMEOUT}s")
+end
 
 ok = 0
 columns = config['columns'].map do |col|
