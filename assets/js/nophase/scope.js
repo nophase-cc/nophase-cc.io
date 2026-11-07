@@ -60,7 +60,27 @@
     { name: 'tron', a: '#6ef3ff', b: '#ff9d3b' },
     { name: 'lavender haze', a: '#c9b6ff', b: '#ffd6e8' },
     { name: 'toxic', a: '#a6ff00', b: '#ffe600' },
-    { name: 'deep sea', a: '#3be8ff', b: '#7a6bff' }
+    { name: 'deep sea', a: '#3be8ff', b: '#7a6bff' },
+    { name: 'sodium', a: '#ffb347', b: '#ff5e62' },
+    { name: 'aurora', a: '#5effb4', b: '#b48cff' },
+    { name: 'peach fuzz', a: '#ffbe98', b: '#ff8fab' },
+    { name: 'cobalt', a: '#5aa9ff', b: '#e0f0ff' },
+    { name: 'magma', a: '#ff6f3c', b: '#ffd23f' },
+    { name: 'oscilloscope', a: '#7dff6b', b: '#d6ffb0' },
+    { name: 'cyberpunk', a: '#fcee0a', b: '#00f0ff' },
+    { name: 'rose quartz', a: '#f7cad0', b: '#c9a9ff' },
+    { name: 'teal & tangerine', a: '#2ec4b6', b: '#ff9f1c' },
+    { name: 'arcade', a: '#ff3cac', b: '#2bd2ff' },
+    { name: 'sage', a: '#c5e0b4', b: '#f2d0a4' },
+    { name: 'sulfur', a: '#e9ff70', b: '#ff70a6' },
+    { name: 'vhs', a: '#ff6ec7', b: '#7dd3fc' },
+    { name: 'thermal', a: '#ffef5a', b: '#ff4f81' },
+    { name: 'mercury', a: '#dfe6ee', b: '#90caf9' },
+    { name: 'jade', a: '#4dffc3', b: '#fff2a8' },
+    { name: 'flamingo', a: '#ff8ac7', b: '#ffd9a0' },
+    { name: 'electric lime', a: '#b7ff00', b: '#ff4ecd' },
+    { name: 'dusk', a: '#ffa69e', b: '#8ba8ff' },
+    { name: 'gameboy', a: '#c4f07a', b: '#8bd450' }
   ];
 
   // relationship between the two generated hues, in degrees

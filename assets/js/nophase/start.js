@@ -286,11 +286,15 @@
     if (feedStatus) feedStatus.textContent = 'headlines unavailable right now · the sources are below';
   }
 
-  function feedRender(data) {
+  function feedRender(data, cached) {
+    if (!data || !Array.isArray(data.columns)) throw new Error('Invalid feed');
     var total = 0;
+    index = index.filter(function (item) { return item.type !== 'news'; });
     (data.columns || []).forEach(function (col) {
-      var list = feedEl.querySelector('[data-feed="' + String(col.title).replace(/"/g, '') + '"]');
-      if (!list || !col.items || !col.items.length) return;
+      var list = [].find.call(feedEl.querySelectorAll('[data-feed]'), function (el) {
+        return el.getAttribute('data-feed') === col.title;
+      });
+      if (!list || !Array.isArray(col.items) || !col.items.length) return;
       list.textContent = '';
       col.items.forEach(function (it) {
         var url = safeUrl(it.url);
@@ -320,18 +324,37 @@
         });
       });
     });
-    if (!total) { feedFailed(); return; }
+    if (!total) throw new Error('Empty feed');
     feedEl.classList.remove('is-loading');
-    if (feedStatus) feedStatus.textContent = 'updated ' + ago(data.generated) + ' ago · opens the source';
+    feedEl.classList.remove('is-offline');
+    if (feedStatus) feedStatus.textContent = (cached ? 'saved headlines · ' : '') +
+      'updated ' + ago(data.generated) + ' ago · ' + (cached ? 'live feed unavailable' : 'opens the source');
+    if (!cached) {
+      try { localStorage.setItem('nophase.feed', JSON.stringify(data)); } catch (error) {}
+    }
   }
 
   if (feedEl && feedCfg && feedCfg.url && window.fetch) {
     // a new query every 10 minutes: skips stale CDN and service-worker copies
     var bucket = Math.floor(Date.now() / 600000);
-    fetch(feedCfg.url + '?t=' + bucket, { cache: 'no-store' })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(feedRender)
-      .catch(feedFailed);
+    var controller = window.AbortController ? new AbortController() : null;
+    var timeout;
+    var deadline = new Promise(function (resolve, reject) {
+      timeout = setTimeout(function () {
+        if (controller) controller.abort();
+        reject(new Error('Feed timed out'));
+      }, 12000);
+    });
+    var request = fetch(feedCfg.url + '?t=' + bucket, { cache: 'no-store', signal: controller ? controller.signal : undefined })
+      .then(function (response) { if (!response.ok) throw new Error(response.status); return response.json(); });
+    Promise.race([request, deadline])
+      .then(function (data) { clearTimeout(timeout); feedRender(data, false); })
+      .catch(function () {
+        clearTimeout(timeout);
+        try {
+          feedRender(JSON.parse(localStorage.getItem('nophase.feed')), true);
+        } catch (error) { feedFailed(); }
+      });
   } else if (feedEl) {
     feedFailed();
   }

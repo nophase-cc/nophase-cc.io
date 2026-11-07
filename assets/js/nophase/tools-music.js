@@ -274,6 +274,192 @@
     ['min9', [0, 2, 3, 7, 10]], ['9', [0, 2, 4, 7, 10]]
   ];
 
+  /* =====================================================================
+   * Guitar: chord shapes, diagrams and a fretboard (standard tuning)
+   * ===================================================================== */
+  var TUNING = [40, 45, 50, 55, 59, 64]; // low E, A, D, G, B, high E
+  var X = -1; // a muted string in a fret list
+  var _ = null; // a muted string in a relative shape (relative -1 is a real fret)
+  // Movable CAGED-style shapes: frets relative to the root's fret on the
+  // shape's root string. Every one is checked against its chord tones.
+  var SHAPES = [
+    { open: 4, q: { // root on the low E string
+      '': [0, 2, 2, 1, 0, 0], m: [0, 2, 2, 0, 0, 0], '7': [0, 2, 0, 1, 0, 0], maj7: [0, 2, 1, 1, 0, 0],
+      m7: [0, 2, 0, 0, 0, 0], dim: [0, 1, 2, 0, _, _], aug: [0, 3, 2, 1, 1, 0], mMaj7: [0, 2, 1, 0, 0, 0],
+      'maj7#5': [0, 3, 1, 1, 1, 0], m7b5: [0, _, 0, 0, -1, _], sus4: [0, 2, 2, 2, 0, 0], '6': [0, 2, 2, 1, 2, 0],
+      m6: [0, 2, 2, 0, 2, 0], add9: [0, 2, 4, 1, 0, 0], '9': [0, 2, 0, 1, 0, 2], maj9: [0, 2, 1, 1, 0, 2],
+      m9: [0, 2, 0, 0, 0, 2]
+    } },
+    { open: 9, q: { // root on the A string
+      '': [_, 0, 2, 2, 2, 0], m: [_, 0, 2, 2, 1, 0], '7': [_, 0, 2, 0, 2, 0], maj7: [_, 0, 2, 1, 2, 0],
+      m7: [_, 0, 2, 0, 1, 0], dim: [_, 0, 1, 2, 1, _], aug: [_, 0, 3, 2, 2, 1], mMaj7: [_, 0, 2, 1, 1, 0],
+      'maj7#5': [_, 0, 3, 1, 2, 1], m7b5: [_, 0, 1, 0, 1, _], dim7: [_, 0, 1, -1, 1, _], sus2: [_, 0, 2, 2, 0, 0],
+      sus4: [_, 0, 2, 2, 3, 0], '6': [_, 0, 2, 2, 2, 2], m6: [_, 0, 2, 2, 1, 2], add9: [_, 0, 2, 4, 2, 0]
+    } },
+    { open: 2, q: { dim7: [_, _, 0, 1, 0, 1] } } // root on the D string
+  ];
+  // the open chords every chart uses where the movable shapes would sit high
+  var OPEN = {
+    0: { aug: [X, 3, 2, 1, 1, 0], '': [X, 3, 2, 0, 1, 0], '7': [X, 3, 2, 3, 1, 0], maj7: [X, 3, 2, 0, 0, 0], add9: [X, 3, 2, 0, 3, 0], '6': [X, 3, 2, 2, 1, 0] },
+    2: { '': [X, X, 0, 2, 3, 2], m: [X, X, 0, 2, 3, 1], '7': [X, X, 0, 2, 1, 2], maj7: [X, X, 0, 2, 2, 2], m7: [X, X, 0, 2, 1, 1],
+      sus2: [X, X, 0, 2, 3, 0], sus4: [X, X, 0, 2, 3, 3] },
+    5: { maj7: [X, X, 3, 2, 1, 0] },
+    7: { '': [3, 2, 0, 0, 0, 3], '7': [3, 2, 0, 0, 0, 1], maj7: [3, 2, 0, 0, 0, 2], '6': [3, 2, 0, 0, 0, 0] },
+    11: { '7': [X, 2, 1, 2, 0, 2] }
+  };
+  // scale-finder chord names -> shape quality keys
+  var QUALITY = { maj: '', min: 'm', min7: 'm7', min9: 'm9' };
+
+  function maxFret(f) { return Math.max.apply(null, f); }
+  function strings(f) { return f.filter(function (v) { return v >= 0; }).length; }
+
+  // root: pitch class, q: quality key ('', 'm', '7', 'maj7', ...). Returns frets low E -> high E, or null.
+  function chordShape(root, q) {
+    q = QUALITY[q] !== undefined ? QUALITY[q] : q;
+    if (OPEN[root] && OPEN[root][q]) return OPEN[root][q].slice();
+    var best = null;
+    SHAPES.forEach(function (sh) {
+      var rel = sh.q[q];
+      if (!rel) return;
+      var r = (root - sh.open + 12) % 12;
+      if (rel.some(function (v) { return v !== _ && r + v < 0; })) r += 12;
+      var f = rel.map(function (v) { return v === _ ? X : r + v; });
+      if (maxFret(f) > 17) return;
+      if (!best || maxFret(f) < maxFret(best) || (maxFret(f) === maxFret(best) && strings(f) > strings(best))) best = f;
+    });
+    return best;
+  }
+
+  function shapeInfo(frets) {
+    var fretted = frets.filter(function (f) { return f > 0; });
+    var min = fretted.length ? Math.min.apply(null, fretted) : 0;
+    var max = fretted.length ? Math.max.apply(null, fretted) : 0;
+    var barre = null;
+    // only call it a barre when there are more fretted notes than fingers
+    if (fretted.length > 4) {
+      var at = [];
+      frets.forEach(function (f, i) { if (f === min) at.push(i); });
+      var ok = at.length >= 2;
+      for (var i = at[0]; ok && i <= at[at.length - 1]; i++) if (frets[i] < min) ok = false;
+      if (ok) barre = { fret: min, from: at[0], to: at[at.length - 1] };
+    }
+    return { base: max <= 4 ? 1 : min, barre: barre };
+  }
+
+  function tab(frets) {
+    var wide = frets.some(function (f) { return f > 9; });
+    return frets.map(function (f) { return f < 0 ? 'x' : String(f); }).join(wide ? ' ' : '');
+  }
+
+  function shapeMidi(frets) {
+    var out = [];
+    frets.forEach(function (f, i) { if (f >= 0) out.push(TUNING[i] + f); });
+    return out;
+  }
+
+  // SVG chord box. root: pitch class to highlight.
+  function chordDiagram(frets, root, label) {
+    var info = shapeInfo(frets);
+    var sx = 16;
+    var gap = 12;
+    var top = 20;
+    var fh = 14;
+    var y = function (f) { return top + (f - info.base + 0.5) * fh; };
+    var svg = '<svg viewBox="0 0 86 96" class="gd" role="img" aria-label="' + NP.esc(label) + ' on guitar: ' + tab(frets) + '">';
+    if (info.base > 1) svg += '<text x="0" y="' + (top + fh * 0.5 + 3) + '" class="gd-fr">' + info.base + 'fr</text>';
+    for (var r = 0; r <= 5; r++) {
+      svg += '<line x1="' + sx + '" y1="' + (top + r * fh) + '" x2="' + (sx + 5 * gap) + '" y2="' + (top + r * fh) + '" class="' +
+        (r === 0 && info.base === 1 ? 'gd-nut' : 'gd-line') + '"/>';
+    }
+    for (var s = 0; s < 6; s++) {
+      svg += '<line x1="' + (sx + s * gap) + '" y1="' + top + '" x2="' + (sx + s * gap) + '" y2="' + (top + 5 * fh) + '" class="gd-line"/>';
+    }
+    var b = info.barre;
+    if (b) {
+      svg += '<rect x="' + (sx + b.from * gap - 5) + '" y="' + (y(b.fret) - 5) + '" width="' + ((b.to - b.from) * gap + 10) +
+        '" height="10" rx="5" class="gd-dot"/>';
+    }
+    frets.forEach(function (f, i) {
+      var x = sx + i * gap;
+      var isRoot = f >= 0 && (TUNING[i] + f) % 12 === root;
+      if (f < 0) svg += '<text x="' + x + '" y="' + (top - 6) + '" class="gd-x">×</text>';
+      else if (f === 0) svg += '<circle cx="' + x + '" cy="' + (top - 8) + '" r="3.2" class="gd-open' + (isRoot ? ' root' : '') + '"/>';
+      else if (!(b && f === b.fret && i >= b.from && i <= b.to)) {
+        svg += '<circle cx="' + x + '" cy="' + y(f) + '" r="4.8" class="gd-dot' + (isRoot ? ' root' : '') + '"/>';
+      } else if (isRoot) {
+        svg += '<circle cx="' + x + '" cy="' + y(f) + '" r="2.2" class="gd-in"/>';
+      }
+    });
+    return svg + '</svg>';
+  }
+
+  NP.guitar = { TUNING: TUNING, shape: chordShape, diagram: chordDiagram, tab: tab, midi: shapeMidi, SHAPES: SHAPES, OPEN: OPEN };
+
+  // Horizontal fretboard, high E on top like tab. opts: { frets, onNote(midi) }
+  NP.fretboard = function (el, opts) {
+    var FR = opts.frets || 15;
+    var x0 = 30;
+    var fw = 40;
+    var y0 = 14;
+    var sg = 18;
+    var W = x0 + FR * fw + 8;
+    var H = y0 + 5 * sg + 22;
+    var state = { pc: [], root: -1, flats: false };
+    el.classList.add('fb');
+
+    function cx(f) { return f === 0 ? x0 - 15 : x0 + (f - 0.5) * fw; }
+
+    function render() {
+      var on = {};
+      state.pc.forEach(function (p) { on[p] = 1; });
+      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="fb-svg" role="img" aria-label="Guitar fretboard">';
+      [3, 5, 7, 9, 15].forEach(function (f) {
+        if (f <= FR) svg += '<circle cx="' + cx(f) + '" cy="' + (y0 + 2.5 * sg) + '" r="4" class="fb-inlay"/>';
+      });
+      if (FR >= 12) {
+        svg += '<circle cx="' + cx(12) + '" cy="' + (y0 + 1.5 * sg) + '" r="4" class="fb-inlay"/>' +
+          '<circle cx="' + cx(12) + '" cy="' + (y0 + 3.5 * sg) + '" r="4" class="fb-inlay"/>';
+      }
+      for (var f = 0; f <= FR; f++) {
+        svg += '<line x1="' + (x0 + f * fw) + '" y1="' + y0 + '" x2="' + (x0 + f * fw) + '" y2="' + (y0 + 5 * sg) + '" class="' +
+          (f === 0 ? 'fb-nut' : 'fb-fret') + '"/>';
+        if ([3, 5, 7, 9, 12, 15].indexOf(f) !== -1) svg += '<text x="' + cx(f) + '" y="' + (H - 4) + '" class="fb-num">' + f + '</text>';
+      }
+      for (var row = 0; row < 6; row++) {
+        var open = TUNING[5 - row];
+        var yy = y0 + row * sg;
+        svg += '<line x1="' + x0 + '" y1="' + yy + '" x2="' + (x0 + FR * fw) + '" y2="' + yy + '" class="fb-string" style="stroke-width:' + (0.8 + row * 0.25) + '"/>';
+        for (f = 0; f <= FR; f++) {
+          var m = open + f;
+          var pc = m % 12;
+          if (on[pc]) {
+            svg += '<g class="fb-note' + (pc === state.root ? ' root' : '') + '" data-m="' + m + '"><circle cx="' + cx(f) + '" cy="' + yy +
+              '" r="7.5"/><text x="' + cx(f) + '" y="' + (yy + 2.6) + '">' + NP.pcName(pc, state.flats) + '</text></g>';
+          } else if (opts.onNote) {
+            svg += '<rect data-m="' + m + '" x="' + (cx(f) - fw / 2 + 2) + '" y="' + (yy - sg / 2) + '" width="' + (fw - 4) + '" height="' + sg + '" class="fb-hit"/>';
+          }
+        }
+      }
+      el.innerHTML = svg + '</svg>';
+    }
+
+    if (opts.onNote) {
+      el.addEventListener('click', function (e) {
+        var t = e.target.closest('[data-m]');
+        if (t) opts.onNote(parseInt(t.getAttribute('data-m'), 10));
+      });
+    }
+    render();
+    return {
+      update: function (u) {
+        state.pc = u.pc || [];
+        state.root = u.root === undefined ? -1 : u.root;
+        state.flats = !!u.flats;
+        render();
+      }
+    };
+  };
+
   function pcsOf(root, ivs) { return ivs.map(function (i) { return (root + i) % 12; }); }
 
   NP.tool({
@@ -282,8 +468,10 @@
     title: 'Scale & chord finder',
     keys: 'scale mode chord key finder notes theory',
     wide: true,
-    head: '<div class="seg mono" data-f="mode"><button type="button" class="seg-btn active" data-v="build">build</button>' +
-      '<button type="button" class="seg-btn" data-v="find">identify</button></div>',
+    head: '<div class="gen-row"><div class="seg mono" data-f="view"><button type="button" class="seg-btn active" data-v="keys">keys</button>' +
+      '<button type="button" class="seg-btn" data-v="guitar">guitar</button></div>' +
+      '<div class="seg mono" data-f="mode"><button type="button" class="seg-btn active" data-v="build">build</button>' +
+      '<button type="button" class="seg-btn" data-v="find">identify</button></div></div>',
     html:
       '<div class="sc-controls" data-f="build-ui">' +
       '<label><span class="mono">root</span><select data-f="root" class="field mono">' + option(ROOTS, '0') + '</select></label>' +
@@ -294,8 +482,9 @@
       '<div class="seg mono" data-f="acc"><button type="button" class="seg-btn active" data-v="sharp">♯</button>' +
       '<button type="button" class="seg-btn" data-v="flat">♭</button></div>' +
       '<button type="button" class="tap-btn mono" data-f="play"><i class="fas fa-play fa-fw"></i> play</button></div>' +
-      '<p class="sc-hint mono" data-f="hint" hidden>click keys to select notes, matching scales and chords appear below</p>' +
+      '<p class="sc-hint mono" data-f="hint" hidden>click keys or frets to select notes, matching scales and chords appear below</p>' +
       '<div data-f="keys"></div>' +
+      '<div data-f="frets" hidden></div>' +
       '<div class="sc-out mono" data-f="out"></div>',
     init: function (c) {
       var mode = 'build';
@@ -307,6 +496,14 @@
       var buildUi = q(c, 'build-ui');
       var hint = q(c, 'hint');
       var piano;
+      var board;
+      var view = NP.store('nophase.scview') === 'guitar' ? 'guitar' : 'keys';
+
+      // one place that lights up notes on whichever instrument is showing
+      function show(u) {
+        piano.update({ start: 48, pc: u.pc, root: u.root });
+        board.update({ pc: u.pc, root: u.root, flats: flats });
+      }
 
       function current() {
         var t = typeEl.value;
@@ -318,16 +515,19 @@
       function drawBuild() {
         var s = current();
         var pcs = pcsOf(s.root, s.ivs);
-        piano.update({ start: 48, pc: pcs, root: s.root });
+        show({ pc: pcs, root: s.root });
+        var shape = !s.isScale && view === 'guitar' && NP.guitar.shape(s.root, s.name);
         out.innerHTML = '<div class="sc-notes">' + pcs.map(function (p, i) {
           return '<span class="note' + (i === 0 ? ' is-root' : '') + '">' + NP.pcName(p, flats) + '</span>';
         }).join('') + '</div>' +
-          '<div class="sc-sub">' + NP.pcName(s.root, flats) + ' ' + s.name + ' · semitones ' + s.ivs.join(' ') + '</div>';
+          '<div class="sc-sub">' + NP.pcName(s.root, flats) + ' ' + s.name + ' · semitones ' + s.ivs.join(' ') + '</div>' +
+          (shape ? '<div class="gd-wrap">' + NP.guitar.diagram(shape, s.root, NP.pcName(s.root, flats) + ' ' + s.name) +
+            '<span class="gd-tab">' + NP.guitar.tab(shape) + '</span></div>' : '');
       }
 
       function drawFind() {
         var sel = Object.keys(picked).map(Number).sort(function (a, b) { return a - b; });
-        piano.update({ start: 48, pc: sel });
+        show({ pc: sel });
         if (!sel.length) { out.innerHTML = '<div class="sc-sub">no notes selected</div>'; return; }
         var scales = [];
         var chords = [];
@@ -356,18 +556,27 @@
 
       function draw() { if (mode === 'build') drawBuild(); else drawFind(); }
 
-      piano = NP.piano(q(c, 'keys'), {
-        start: 48,
-        octaves: 2,
-        onKey: function (m) {
-          if (mode === 'find') {
-            var p = m % 12;
-            if (picked[p]) delete picked[p]; else picked[p] = 1;
-            drawFind();
-          }
-          A.tone(midiToHz(m), { dur: 0.5 });
+      function onNote(m) {
+        if (mode === 'find') {
+          var p = m % 12;
+          if (picked[p]) delete picked[p]; else picked[p] = 1;
+          drawFind();
         }
-      });
+        A.tone(midiToHz(m), { dur: 0.5 });
+      }
+      piano = NP.piano(q(c, 'keys'), { start: 48, octaves: 2, onKey: onNote });
+      board = NP.fretboard(q(c, 'frets'), { frets: 15, onNote: onNote });
+
+      function setView(v) {
+        view = v;
+        NP.store('nophase.scview', v);
+        q(c, 'keys').hidden = v !== 'keys';
+        q(c, 'frets').hidden = v !== 'guitar';
+        draw();
+      }
+      NP.seg(q(c, 'view'), setView)(view);
+      q(c, 'keys').hidden = view !== 'keys';
+      q(c, 'frets').hidden = view !== 'guitar';
 
       rootEl.addEventListener('change', draw);
       typeEl.addEventListener('change', draw);
@@ -445,7 +654,7 @@
     id: 'prog',
     group: 'music',
     title: 'Chord progression generator',
-    keys: 'chord progression generator roman numerals theory',
+    keys: 'chord progression generator roman numerals theory guitar chords diagram voicing voice leading midi export',
     wide: true,
     head: '<div class="seg mono" data-f="mode"><button type="button" class="seg-btn active" data-v="major">major</button>' +
       '<button type="button" class="seg-btn" data-v="minor">minor</button></div>',
@@ -457,22 +666,30 @@
       '<div class="seg mono" data-f="len"><button type="button" class="seg-btn active" data-v="4">4</button>' +
       '<button type="button" class="seg-btn" data-v="8">8</button></div>' +
       '<label class="check mono"><input type="checkbox" data-f="sev"> 7ths</label>' +
+      '<div class="seg mono" data-f="view"><button type="button" class="seg-btn active" data-v="notes">notes</button>' +
+      '<button type="button" class="seg-btn" data-v="guitar">guitar</button></div>' +
       '<button type="button" class="tap-btn mono" data-f="roll"><i class="fas fa-dice fa-fw"></i> roll</button></div>' +
       '<div class="chords" data-f="chords"></div>' +
+      '<p class="tool-note mono" data-f="guitarhelp" hidden>Read each box left to right: low E, A, D, G, B, high E. Dots show where to press; a bar means hold those strings together. Numbers are frets, 0 is an open string, x means don’t play it. Highlighted dots are the root note.</p>' +
       '<div class="pitch-ctl"><button type="button" class="tap-btn mono" data-f="play"><i class="fas fa-play fa-fw"></i> play</button>' +
       '<button type="button" class="step-btn mono" data-f="loop" title="Loop">loop</button>' +
-      '<button type="button" class="step-btn mono" data-f="copy" title="Copy chord names">copy</button></div>' +
+      '<button type="button" class="step-btn mono" data-f="copy" title="Copy chord names">copy</button>' +
+      '<button type="button" class="step-btn mono" data-f="mid" title="Download as a MIDI file">.mid</button>' +
+      '<label class="check mono" title="Move each chord to the nearest inversion instead of jumping"><input type="checkbox" data-f="smooth" checked> smooth</label></div>' +
       '<p class="tool-note mono" data-f="note"></p>',
     init: function (c) {
       var minor = false;
       var style = 'common';
       var len = 4;
+      var view = NP.store('nophase.progview') === 'guitar' ? 'guitar' : 'notes';
       var keyEl = q(c, 'key');
       var sev = q(c, 'sev');
+      var smooth = q(c, 'smooth');
       var box = q(c, 'chords');
       var playBtn = q(c, 'play');
       var loopBtn = q(c, 'loop');
       var prog = [];
+      var locked = [];
       var chords = [];
       var timers = [];
       var playing = false;
@@ -489,11 +706,11 @@
         var f = usesFlats(key, minor);
         var rn = ROMAN[deg];
         var low = info[1] === 1;
-        var sfx = withSev ? (SEV_SUFFIX[info[0]] || '') : (info[0] === 'dim' ? '\u00b0' : info[0] === 'aug' ? '+' : '');
-        var roman = (low ? rn.toLowerCase() : rn) + sfx;
+        var sfx = withSev ? (SEV_SUFFIX[info[0]] || '') : (info[0] === 'dim' ? '°' : info[0] === 'aug' ? '+' : '');
         return {
-          name: NP.pcName(rootPc, f) + info[0], roman: roman, root: rootPc, steps: steps,
-          notes: steps.map(function (s) { return NP.pcName(rootPc + s, f); })
+          name: NP.pcName(rootPc, f) + info[0], roman: (low ? rn.toLowerCase() : rn) + sfx, root: rootPc, steps: steps,
+          quality: info[0], notes: steps.map(function (s) { return NP.pcName(rootPc + s, f); }),
+          shape: NP.guitar.shape(rootPc, info[0])
         };
       }
 
@@ -514,28 +731,90 @@
         return seq;
       }
 
+      /* voicings: what plays is what exports */
+
+      // every close-position inversion with its lowest note between E3 and E4
+      function inversions(ch) {
+        var pcs = ch.steps.map(function (s) { return (ch.root + s) % 12; });
+        var out = [];
+        for (var inv = 0; inv < pcs.length; inv++) {
+          var order = pcs.slice(inv).concat(pcs.slice(0, inv));
+          for (var lo = 52; lo <= 64; lo++) {
+            if (lo % 12 !== order[0]) continue;
+            var v = [lo];
+            order.slice(1).forEach(function (pc) {
+              var m = v[v.length - 1] + 1;
+              while (m % 12 !== pc) m++;
+              v.push(m);
+            });
+            out.push(v);
+          }
+        }
+        return out;
+      }
+
+      function voicings() {
+        if (view === 'guitar') {
+          return chords.map(function (ch) { return ch.shape ? NP.guitar.midi(ch.shape) : [48 + ch.root]; });
+        }
+        var prev = null;
+        return chords.map(function (ch) {
+          var bass = 36 + ch.root;
+          var upper;
+          if (!smooth.checked) {
+            var base = 60 + ch.root;
+            if (base > 65) base -= 12;
+            upper = ch.steps.map(function (s) { return base + s; });
+          } else {
+            var cost = Infinity;
+            inversions(ch).forEach(function (v) {
+              var cst = 0;
+              if (!prev) cst = Math.abs(v[0] - 57) + (v[0] % 12 === ch.root ? 0 : 4);
+              else {
+                for (var i = 0; i < Math.max(v.length, prev.length); i++) {
+                  cst += Math.abs(v[Math.min(i, v.length - 1)] - prev[Math.min(i, prev.length - 1)]);
+                }
+              }
+              if (cst < cost) { cost = cst; upper = v; }
+            });
+            prev = upper;
+          }
+          return [bass].concat(upper);
+        });
+      }
+
       function build(newRoll) {
         stop();
         var key = parseInt(keyEl.value, 10);
-        if (newRoll || !prog.length) prog = pickDegrees();
+        if (newRoll || !prog.length) {
+          var fresh = pickDegrees();
+          prog = fresh.map(function (d, i) { return locked[i] && prog[i] !== undefined ? prog[i] : d; });
+        }
+        locked = prog.map(function (_, i) { return !!locked[i]; });
         chords = prog.map(function (d) { return chordFor(key, d, sev.checked, true); });
+        box.classList.toggle('with-guitar', view === 'guitar');
+        q(c, 'guitarhelp').hidden = view !== 'guitar';
         box.innerHTML = chords.map(function (ch, i) {
-          return '<button type="button" class="chord" data-i="' + i + '"><span class="rn mono">' + ch.roman + '</span>' +
-            '<span class="cn">' + ch.name + '</span><span class="nt mono">' + ch.notes.join(' ') + '</span></button>';
+          return '<div class="chord' + (locked[i] ? ' locked' : '') + '" role="button" tabindex="0" data-i="' + i + '">' +
+            '<span class="chord-top"><span class="rn mono">' + ch.roman + '</span>' +
+            '<button type="button" class="chord-lock" data-lock="' + i + '" aria-pressed="' + locked[i] + '" title="Keep this chord when you roll">' +
+            '<i class="fas fa-' + (locked[i] ? 'lock' : 'lock-open') + '"></i></button></span>' +
+            '<span class="cn">' + ch.name + '</span><span class="nt mono">' + ch.notes.join(' ') + '</span>' +
+            (view === 'guitar' && ch.shape ? '<span class="gd-wrap">' + NP.guitar.diagram(ch.shape, ch.root, ch.name) +
+              '<span class="gd-tab">' + NP.guitar.tab(ch.shape) + '</span></span>' : '') +
+            '</div>';
         }).join('');
+        var anyLocked = locked.some(Boolean);
         q(c, 'note').textContent = NP.pcName(key, usesFlats(key, minor)) + (minor ? ' minor' : ' major') + ' · ' +
-          fmt(NP.bpm.get(), 4) + ' BPM, one bar per chord';
+          fmt(NP.bpm.get(), 4) + ' BPM, one bar per chord' +
+          (view === 'guitar' ? ' · standard tuning, strummed' : '') +
+          (anyLocked ? ' · locked chords stay when you roll' : ' · lock a chord to keep it');
       }
 
-      function voicing(ch) {
-        var base = 48 + ch.root;
-        if (base > 53) base -= 12;
-        return [base].concat(ch.steps.map(function (s) { return base + 12 + s; }));
-      }
-
-      function playChord(ch, when, dur) {
-        voicing(ch).forEach(function (m, i) {
-          A.tone(midiToHz(m), { when: when, dur: dur, gain: i === 0 ? 0.16 : 0.1, attack: 0.02 });
+      function playVoicing(v, when, dur) {
+        var strum = view === 'guitar' ? 0.022 : 0;
+        v.forEach(function (m, i) {
+          A.tone(midiToHz(m), { when: when + i * strum, dur: dur - i * strum, gain: view === 'guitar' ? 0.09 : (i === 0 ? 0.15 : 0.09), attack: 0.01 });
         });
       }
 
@@ -558,8 +837,8 @@
         playBtn.innerHTML = '<i class="fas fa-stop fa-fw"></i> stop';
         var bar = (60 / NP.bpm.get()) * 4;
         var t0 = ac.currentTime + 0.05;
-        chords.forEach(function (ch, i) {
-          playChord(ch, t0 + i * bar, bar * 0.95);
+        voicings().forEach(function (v, i) {
+          playVoicing(v, t0 + i * bar, bar * 0.95);
           timers.push(setTimeout(function () { mark(i); }, (t0 + i * bar - ac.currentTime) * 1000));
         });
         timers.push(setTimeout(function () {
@@ -567,23 +846,61 @@
         }, (t0 + chords.length * bar - ac.currentTime) * 1000));
       }
 
-      box.addEventListener('click', function (e) {
-        var b = e.target.closest('.chord');
-        if (!b) return;
+      function exportMidi() {
+        var ppq = 480;
+        var barTicks = ppq * 4;
+        var notes = [];
+        voicings().forEach(function (v, i) {
+          v.forEach(function (m, j) {
+            var lag = view === 'guitar' ? j * 12 : 0;
+            notes.push({ t: i * barTicks + lag, d: barTicks - 24 - lag, n: m, v: j === 0 ? 96 : 84 });
+          });
+        });
+        var key = NP.pcName(parseInt(keyEl.value, 10), usesFlats(parseInt(keyEl.value, 10), minor)).replace('#', 's');
+        var name = 'nophase-' + key + (minor ? 'm' : '') + '-' + chords.map(function (ch) { return ch.roman.replace(/[^\w]/g, ''); }).join('-');
+        NP.download(NP.midiFile(notes, { bpm: NP.bpm.get(), endTick: chords.length * barTicks, name: chords.map(function (ch) { return ch.name; }).join(' ') }),
+          name + '.mid', 'audio/midi');
+      }
+
+      function playOne(i) {
         var ac = A.get();
-        if (ac) playChord(chords[parseInt(b.getAttribute('data-i'), 10)], ac.currentTime + 0.01, 1.4);
+        if (ac) playVoicing(voicings()[i], ac.currentTime + 0.01, 1.6);
+      }
+
+      box.addEventListener('click', function (e) {
+        var lock = e.target.closest('.chord-lock');
+        if (lock) {
+          var li = parseInt(lock.getAttribute('data-lock'), 10);
+          locked[li] = !locked[li];
+          build(false);
+          return;
+        }
+        var b = e.target.closest('.chord');
+        if (b) playOne(parseInt(b.getAttribute('data-i'), 10));
+      });
+      box.addEventListener('keydown', function (e) {
+        var b = e.target.closest('.chord');
+        if (b && e.target === b && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          playOne(parseInt(b.getAttribute('data-i'), 10));
+        }
       });
       playBtn.addEventListener('click', function () { if (playing) stop(); else run(); });
       loopBtn.addEventListener('click', function () { loop = !loop; loopBtn.classList.toggle('active', loop); });
       q(c, 'copy').addEventListener('click', function (e) {
-        NP.copy(chords.map(function (ch) { return ch.name; }).join(' – '), e.currentTarget);
+        NP.copy(chords.map(function (ch) {
+          return ch.name + (view === 'guitar' && ch.shape ? ' (' + NP.guitar.tab(ch.shape) + ')' : '');
+        }).join(' – '), e.currentTarget);
       });
+      q(c, 'mid').addEventListener('click', exportMidi);
       q(c, 'roll').addEventListener('click', function () { build(true); });
       keyEl.addEventListener('change', function () { build(false); });
       sev.addEventListener('change', function () { build(false); });
-      NP.seg(q(c, 'mode'), function (v) { minor = v === 'minor'; build(true); });
+      smooth.addEventListener('change', function () { if (playing) { stop(); run(); } });
+      NP.seg(q(c, 'mode'), function (v) { minor = v === 'minor'; locked = []; build(true); });
       NP.seg(q(c, 'style'), function (v) { style = v; build(true); });
       NP.seg(q(c, 'len'), function (v) { len = parseInt(v, 10); build(true); });
+      NP.seg(q(c, 'view'), function (v) { view = v; NP.store('nophase.progview', v); build(false); })(view);
       NP.bpm.on(function () { if (!playing) build(false); });
 
       build(true);
@@ -591,49 +908,101 @@
   });
 
   /* =====================================================================
-   * Euclidean rhythm
+   * Euclidean rhythm: two layers and a logic operator
    * ===================================================================== */
+  function euclid(n, k, rot) {
+    k = Math.min(k, n);
+    var base = [];
+    for (var i = 0; i < n; i++) base.push(k > 0 && (i * k) % n < k ? 1 : 0);
+    return base.map(function (_, i) { return base[((i - rot) % n + n) % n]; });
+  }
+  NP.euclid = euclid;
+  var LOGIC = {
+    and: function (a, b) { return a && b; },
+    or: function (a, b) { return a || b; },
+    xor: function (a, b) { return a !== b; },
+    nand: function (a, b) { return !(a && b); },
+    anot: function (a, b) { return a && !b; },
+    bnot: function (a, b) { return b && !a; }
+  };
+  var LOGIC_LABEL = { and: 'AND', or: 'OR', xor: 'XOR', nand: 'NAND', anot: 'A−B', bnot: 'B−A' };
+  var EUC_RATES = [['1/8', 0.5], ['1/8T', 1 / 3], ['1/16', 0.25], ['1/16T', 1 / 6], ['1/32', 0.125]];
+  var VOICES = ['kick', 'snare', 'hat', 'click', 'off'];
+  var GM = { kick: 36, snare: 38, hat: 42, click: 37 };
+  function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+
+  function layerHtml(id, n, k, r, voice) {
+    return '<div class="euc-layer" data-l="' + id + '"><span class="euc-tag mono">' + id.toUpperCase() + '</span>' +
+      '<label><span class="mono">steps <b data-f="' + id + 'nv">' + n + '</b></span><input type="range" data-f="' + id + 'n" min="2" max="32" value="' + n + '"></label>' +
+      '<label><span class="mono">hits <b data-f="' + id + 'kv">' + k + '</b></span><input type="range" data-f="' + id + 'k" min="0" max="32" value="' + k + '"></label>' +
+      '<label><span class="mono">rotate <b data-f="' + id + 'rv">' + r + '</b></span><input type="range" data-f="' + id + 'r" min="0" max="31" value="' + r + '"></label>' +
+      '<select data-f="' + id + 'voice" class="field field-sm mono" aria-label="Layer ' + id.toUpperCase() + ' sound">' +
+      VOICES.map(function (v) { return '<option' + (v === voice ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></div>';
+  }
+
   NP.tool({
     id: 'euclid',
     group: 'music',
     title: 'Euclidean rhythm',
-    keys: 'euclidean rhythm sequencer polyrhythm drums pattern',
+    keys: 'euclidean rhythm sequencer polyrhythm polymeter drums pattern logic and or xor midi export',
+    wide: true,
     html:
       '<div class="euc">' +
-      '<svg viewBox="0 0 200 200" class="euc-svg" data-f="svg" role="img" aria-label="Euclidean rhythm circle"></svg>' +
-      '<div class="euc-ctl">' +
-      '<label><span class="mono">steps <b data-f="nv">16</b></span><input type="range" data-f="n" min="2" max="32" value="16"></label>' +
-      '<label><span class="mono">hits <b data-f="kv">5</b></span><input type="range" data-f="k" min="0" max="32" value="5"></label>' +
-      '<label><span class="mono">rotate <b data-f="rv">0</b></span><input type="range" data-f="r" min="0" max="31" value="0"></label>' +
+      '<svg viewBox="0 0 200 200" class="euc-svg" data-f="svg" role="img" aria-label="Euclidean rhythm rings, A outside, B inside"></svg>' +
+      '<div class="euc-side">' +
+      layerHtml('a', 16, 4, 0, 'kick') + layerHtml('b', 16, 7, 2, 'hat') +
+      '<div class="euc-layer euc-out"><span class="euc-tag mono">=</span>' +
+      '<div class="seg mono" data-f="op">' + Object.keys(LOGIC).map(function (k) {
+        return '<button type="button" class="seg-btn' + (k === 'xor' ? ' active' : '') + '" data-v="' + k + '">' + LOGIC_LABEL[k] + '</button>';
+      }).join('') + '</div>' +
+      '<select data-f="ovoice" class="field field-sm mono" aria-label="Logic output sound">' +
+      VOICES.map(function (v) { return '<option' + (v === 'snare' ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></div>' +
       '</div></div>' +
-      '<p class="euc-pat mono" data-f="pat"></p>' +
+      '<div class="euc-grid mono" data-f="grid"></div>' +
       '<div class="pitch-ctl"><button type="button" class="tap-btn mono" data-f="play"><i class="fas fa-play fa-fw"></i> play</button>' +
-      '<button type="button" class="step-btn mono" data-f="copy">copy</button></div>' +
-      '<p class="tool-note mono">16th notes at the shared tempo</p>',
+      '<select data-f="rate" class="field field-sm mono" aria-label="Step length">' + EUC_RATES.map(function (r) {
+        return '<option value="' + r[1] + '"' + (r[0] === '1/16' ? ' selected' : '') + '>' + r[0] + '</option>';
+      }).join('') + '</select>' +
+      '<button type="button" class="step-btn mono" data-f="copy">copy</button>' +
+      '<button type="button" class="step-btn mono" data-f="mid" title="Download as a MIDI drum clip">.mid</button></div>' +
+      '<p class="tool-note mono" data-f="note"></p>',
     init: function (c) {
       var svg = q(c, 'svg');
-      var nEl = q(c, 'n');
-      var kEl = q(c, 'k');
-      var rEl = q(c, 'r');
+      var grid = q(c, 'grid');
       var playBtn = q(c, 'play');
-      var pat = [];
+      var op = 'xor';
+      var A_ = [];
+      var B_ = [];
       var pos = -1;
       var timer = 0;
       var step = 0;
       var next = 0;
 
-      function compute() {
+      function layer(id) {
+        var nEl = q(c, id + 'n');
+        var kEl = q(c, id + 'k');
+        var rEl = q(c, id + 'r');
         var n = parseInt(nEl.value, 10);
-        var k = Math.min(parseInt(kEl.value, 10), n);
-        var rot = parseInt(rEl.value, 10) % n;
         kEl.max = n;
         rEl.max = n - 1;
-        var base = [];
-        for (var i = 0; i < n; i++) base.push((i * k) % n < k && k > 0 ? 1 : 0);
-        pat = base.map(function (_, i) { return base[(i - rot + n) % n]; });
-        q(c, 'nv').textContent = n;
-        q(c, 'kv').textContent = k;
-        q(c, 'rv').textContent = rot;
+        var k = Math.min(parseInt(kEl.value, 10), n);
+        var r = parseInt(rEl.value, 10) % n;
+        q(c, id + 'nv').textContent = n;
+        q(c, id + 'kv').textContent = k;
+        q(c, id + 'rv').textContent = r;
+        return euclid(n, k, r);
+      }
+
+      function cycle() { return A_.length * B_.length / gcd(A_.length, B_.length); }
+      function out(t) { return LOGIC[op](!!A_[t % A_.length], !!B_[t % B_.length]) ? 1 : 0; }
+
+      function compute() {
+        A_ = layer('a');
+        B_ = layer('b');
+        var len = cycle();
+        q(c, 'note').textContent = (A_.length === B_.length ? A_.length + ' steps' :
+          'polymeter ' + A_.length + ' against ' + B_.length + ', repeats every ' + len + ' steps') +
+          ' · at the shared tempo · = is A ' + LOGIC_LABEL[op] + ' B';
         draw();
       }
 
@@ -642,32 +1011,53 @@
         return [100 + Math.cos(a) * r, 100 + Math.sin(a) * r];
       }
 
-      function draw() {
+      function ring(pat, r, cls, now) {
         var n = pat.length;
-        var html = '<circle cx="100" cy="100" r="78" class="euc-ring"/>';
+        var html = '<circle cx="100" cy="100" r="' + r + '" class="euc-ring"/>';
         var hits = [];
-        pat.forEach(function (v, i) { if (v) hits.push(pt(i, n, 78)); });
+        pat.forEach(function (v, i) { if (v) hits.push(pt(i, n, r)); });
         if (hits.length > 1) {
-          html += '<polygon class="euc-poly" points="' + hits.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
+          html += '<polygon class="euc-poly ' + cls + '" points="' + hits.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
         }
         pat.forEach(function (v, i) {
-          var p = pt(i, n, 78);
-          html += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (v ? 6 : 3.2) + '" class="euc-dot' +
-            (v ? ' hit' : '') + (i === pos ? ' now' : '') + '"/>';
+          var p = pt(i, n, r);
+          html += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (v ? 5.5 : 2.8) + '" class="euc-dot ' + cls +
+            (v ? ' hit' : '') + (i === now ? ' now' : '') + '"/>';
         });
-        svg.innerHTML = html;
-        q(c, 'pat').textContent = pat.map(function (v) { return v ? 'x' : '.'; }).join('');
+        return html;
       }
+
+      function draw() {
+        svg.innerHTML = ring(A_, 84, 'la', pos < 0 ? -1 : pos % A_.length) + ring(B_, 56, 'lb', pos < 0 ? -1 : pos % B_.length) +
+          '<text x="100" y="104" class="euc-op">' + LOGIC_LABEL[op] + '</text>';
+        var len = Math.min(cycle(), 64);
+        var cur = pos < 0 ? -1 : pos % cycle();
+        function row(label, fn, cls) {
+          var cells = '';
+          for (var t = 0; t < len; t++) {
+            cells += '<i class="' + (fn(t) ? 'on ' + cls : '') + (t === cur ? ' now' : '') + (t % 4 === 0 ? ' beat' : '') + '"></i>';
+          }
+          return '<div class="euc-row"><span>' + label + '</span><div class="euc-cells" style="--n:' + len + '">' + cells + '</div></div>';
+        }
+        grid.innerHTML = row('A', function (t) { return A_[t % A_.length]; }, 'la') +
+          row('B', function (t) { return B_[t % B_.length]; }, 'lb') +
+          row('=', out, 'lo') + (cycle() > 64 ? '<p class="tool-note">showing 64 of ' + cycle() + ' steps</p>' : '');
+      }
+
+      function voices() { return { a: q(c, 'avoice').value, b: q(c, 'bvoice').value, o: q(c, 'ovoice').value }; }
 
       function tick() {
         var ac = A.get();
-        var stepDur = 60 / NP.bpm.get() / 4;
+        var stepDur = (60 / NP.bpm.get()) * parseFloat(q(c, 'rate').value);
+        var v = voices();
         while (next < ac.currentTime + 0.12) {
-          var i = step % pat.length;
-          if (pat[i]) A.hit(next, pat.indexOf(1) === i);
+          var t = step;
+          if (A_[t % A_.length]) A.drum(v.a, next);
+          if (B_[t % B_.length]) A.drum(v.b, next);
+          if (out(t)) A.drum(v.o, next);
           (function (idx, when) {
             setTimeout(function () { if (timer) { pos = idx; draw(); } }, Math.max(0, (when - ac.currentTime) * 1000));
-          })(i, next);
+          })(t, next);
           next += stepDur;
           step++;
         }
@@ -682,7 +1072,7 @@
       }
 
       playBtn.addEventListener('click', function () {
-        if (timer) return stop();
+        if (timer) { stop(); return; }
         var ac = A.get();
         if (!ac) return;
         step = 0;
@@ -690,10 +1080,32 @@
         timer = setInterval(tick, 25);
         playBtn.innerHTML = '<i class="fas fa-stop fa-fw"></i> stop';
       });
+
       q(c, 'copy').addEventListener('click', function (e) {
-        NP.copy(pat.map(function (v) { return v ? 'x' : '.'; }).join(''), e.currentTarget);
+        var len = cycle();
+        function line(fn) { var s = ''; for (var t = 0; t < len; t++) s += fn(t) ? 'x' : '.'; return s; }
+        NP.copy('A ' + line(function (t) { return A_[t % A_.length]; }) + '\nB ' + line(function (t) { return B_[t % B_.length]; }) +
+          '\n= ' + line(out) + '   (A ' + LOGIC_LABEL[op] + ' B)', e.currentTarget);
       });
-      [nEl, kEl, rEl].forEach(function (el) { el.addEventListener('input', compute); });
+
+      q(c, 'mid').addEventListener('click', function () {
+        var ppq = 480;
+        var stepTicks = Math.round(ppq * parseFloat(q(c, 'rate').value));
+        var len = cycle();
+        var v = voices();
+        var notes = [];
+        for (var t = 0; t < len; t++) {
+          [['a', A_[t % A_.length]], ['b', B_[t % B_.length]], ['o', out(t)]].forEach(function (x) {
+            if (x[1] && GM[v[x[0]]]) notes.push({ t: t * stepTicks, d: Math.max(30, stepTicks / 2), n: GM[v[x[0]]], v: x[0] === 'o' ? 110 : 96, ch: 9 });
+          });
+        }
+        if (!notes.length) return;
+        NP.download(NP.midiFile(notes, { bpm: NP.bpm.get(), endTick: len * stepTicks, name: 'NOPHASE euclid' }),
+          'nophase-euclid-' + A_.length + 'x' + B_.length + '-' + LOGIC_LABEL[op].replace('−', '-not-').toLowerCase() + '.mid', 'audio/midi');
+      });
+
+      c.addEventListener('input', function (e) { if (e.target.type === 'range') compute(); });
+      NP.seg(q(c, 'op'), function (v) { op = v; compute(); });
       compute();
     }
   });

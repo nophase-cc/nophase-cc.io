@@ -22,7 +22,7 @@ columns:
       - { name: BleepingComputer, site: "https://www.bleepingcomputer.com", feed: "https://www.bleepingcomputer.com/feed/" }
       - { name: Krebs on Security, site: "https://krebsonsecurity.com", feed: "https://krebsonsecurity.com/feed/" }
       - { name: SANS ISC, site: "https://isc.sans.edu", feed: "https://isc.sans.edu/rssfeed.xml" }
-      - { name: CISA, site: "https://www.cisa.gov/news-events/cybersecurity-advisories", feed: "https://www.cisa.gov/cybersecurity-advisories/all.xml" }
+      - { name: The Hacker News, site: "https://thehackernews.com", feed: "https://feeds.feedburner.com/TheHackersNews" }
 
   - title: Network
     icon: fas fa-network-wired

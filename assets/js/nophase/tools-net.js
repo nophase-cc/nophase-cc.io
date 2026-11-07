@@ -268,7 +268,7 @@
     id: 'dns',
     group: 'net',
     title: 'DNS lookup',
-    keys: 'dns lookup dig nslookup resolve a aaaa mx txt ns cname caa soa ptr reverse doh dnssec spf dmarc',
+    keys: 'dns lookup dig nslookup resolve a aaaa mx txt ns cname caa soa ptr reverse doh dnssec spf dmarc email',
     wide: true,
     html:
       '<div class="dns-row">' +
@@ -298,18 +298,22 @@
         var rev = reverseName(raw);
         var n = rev || raw;
         var types = rev ? ['PTR'] : type.value === 'ALL' ? ALL : [type.value];
+        var queries = types.map(function (t) { return [n, t]; });
+        // ALL also checks the mail-auth records that live on other names
+        if (!rev && type.value === 'ALL') queries.push(['_dmarc.' + n, 'TXT']);
         var id = ++seq;
         msg.textContent = 'asking ' + q(c, 'via').selectedOptions[0].textContent + ' for ' + n + ' …';
-        Promise.all(types.map(function (t) {
-          return ask(n, t).then(function (j) { return { t: t, j: j }; }, function (e) { return { t: t, err: e.message }; });
+        Promise.all(queries.map(function (x) {
+          return ask(x[0], x[1]).then(function (j) { return { t: x[1], j: j }; }, function (e) { return { t: x[1], err: e.message }; });
         })).then(function (res) {
           if (id !== seq) return;
           var rows = [];
           var status = '';
           var secure = false;
-          res.forEach(function (r) {
+          res.forEach(function (r, i) {
             if (r.err) { rows.push('<tr><td>' + r.t + '</td><td class="bad">' + NP.esc(r.err) + '</td></tr>'); return; }
-            status = RCODE[r.j.Status] || 'rcode ' + r.j.Status;
+            // the overall status is the main name's; a missing _dmarc record is not an NXDOMAIN for it
+            if (i === 0 || !status) status = RCODE[r.j.Status] || 'rcode ' + r.j.Status;
             secure = secure || !!r.j.AD;
             (r.j.Answer || []).forEach(function (a) {
               rows.push('<tr><td>' + (RR[a.type] || a.type) + '</td><td><button type="button" class="cell" data-copy="' +
@@ -317,7 +321,12 @@
             });
           });
           out.innerHTML = rows.join('') || '<tr><td>—</td><td>no records</td></tr>';
-          msg.textContent = n + ' · ' + status + (secure ? ' · DNSSEC validated' : '') + ' · ' + rows.length + ' records';
+          var mail = '';
+          if (!rev && type.value === 'ALL') {
+            var txt = rows.join(' ');
+            mail = ' · SPF ' + (/v=spf1/i.test(txt) ? '✓' : '✗') + ' · DMARC ' + (/v=DMARC1/i.test(txt) ? '✓' : '✗');
+          }
+          msg.textContent = n + ' · ' + status + (secure ? ' · DNSSEC validated' : '') + ' · ' + rows.length + ' records' + mail;
         });
       }
 

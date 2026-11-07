@@ -54,17 +54,47 @@
     id: 'cidr',
     group: 'net',
     title: 'Subnet calculator',
-    keys: 'subnet cidr ip ipv4 netmask wildcard broadcast hosts network',
+    keys: 'subnet cidr ip ipv4 netmask wildcard broadcast hosts network split vlsm',
     html:
       '<label class="stack"><span class="mono">IPv4 / prefix (or mask)</span>' +
       '<input data-f="in" class="field mono" type="text" value="192.168.1.10/24" spellcheck="false" autocapitalize="off"></label>' +
       '<table class="kv mono" data-f="out"></table>' +
-      '<p class="tool-note mono" data-f="msg"></p>',
+      '<p class="tool-note mono" data-f="msg"></p>' +
+      '<div class="gen-row mono"><label class="ref">split into / <input data-f="split" class="field field-sm" type="number" min="1" max="32" placeholder="26"></label>' +
+      '<span class="tool-note" data-f="splitmsg"></span></div>' +
+      '<div class="ref-scroll" data-f="splitwrap" hidden><table class="ref-table mono"><tbody data-f="subnets"></tbody></table></div>',
     init: function (c) {
       var input = q(c, 'in');
       var out = q(c, 'out');
       var msg = q(c, 'msg');
+      var split = q(c, 'split');
       copyCells(out);
+      copyCells(q(c, 'subnets'));
+
+      // carve net/prefix into /to subnets (first 128 listed)
+      function drawSplit(net, prefix) {
+        var to = parseInt(split.value, 10);
+        var wrap = q(c, 'splitwrap');
+        var note = q(c, 'splitmsg');
+        split.placeholder = String(Math.min(32, prefix + 2));
+        if (!(to > prefix && to <= 32)) {
+          wrap.hidden = true;
+          note.textContent = split.value ? 'pick a prefix longer than /' + prefix : '';
+          return;
+        }
+        var count = Math.pow(2, to - prefix);
+        var size = Math.pow(2, 32 - to);
+        var rows = '';
+        for (var i = 0; i < Math.min(count, 128); i++) {
+          var n = net + i * size;
+          var hosts = to >= 31 ? intToIp(n) + ' – ' + intToIp(n + size - 1) : intToIp(n + 1) + ' – ' + intToIp(n + size - 2);
+          rows += '<tr><td><button type="button" class="cell" data-copy="' + intToIp(n) + '/' + to + '">' + intToIp(n) + '/' + to +
+            '</button></td><td>' + hosts + '</td></tr>';
+        }
+        q(c, 'subnets').innerHTML = rows;
+        wrap.hidden = false;
+        note.textContent = count + ' subnets × ' + (to >= 31 ? size : size - 2) + ' hosts' + (count > 128 ? ' · first 128 shown' : '');
+      }
 
       function draw() {
         var m = input.value.trim().match(/^([\d.]+)(?:(?:\s*\/\s*|\s+)(\d{1,2}|\d[\d.]*))?$/);
@@ -101,9 +131,11 @@
           ['usable hosts', String(hosts)], ['binary', bin(ip)]
         ]);
         msg.textContent = kind || 'public address space';
+        drawSplit(net, prefix);
       }
 
       input.addEventListener('input', draw);
+      split.addEventListener('input', draw);
       draw();
     }
   });
@@ -260,34 +292,70 @@
     id: 'hash',
     group: 'sec',
     title: 'Hash',
-    keys: 'sha1 sha256 sha512 checksum digest file',
+    keys: 'sha1 sha256 sha512 checksum digest file verify download integrity',
     html:
       '<textarea data-f="in" class="field mono" rows="3" spellcheck="false" placeholder="text to hash"></textarea>' +
       '<label class="file mono"><input type="file" data-f="file"> or hash a file (stays on your machine)</label>' +
+      '<input data-f="expect" class="field mono" type="text" spellcheck="false" autocapitalize="off" placeholder="paste the published hash to verify a download">' +
       '<table class="kv mono" data-f="out"></table>' +
+      '<p class="tool-note mono" data-f="verdict"></p>' +
       '<p class="tool-note mono" data-f="msg"></p>',
     init: function (c) {
       var inp = q(c, 'in');
       var out = q(c, 'out');
       var msg = q(c, 'msg');
+      var expect = q(c, 'expect');
+      var verdict = q(c, 'verdict');
+      var last = [];
+      var sequence = 0;
       copyCells(out);
       var ALGS = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
 
-      function digest(data, label) {
-        if (!window.crypto || !crypto.subtle) { msg.textContent = 'needs https or localhost'; return; }
-        Promise.all(ALGS.map(function (a) { return crypto.subtle.digest(a, data); })).then(function (res) {
-          out.innerHTML = kv(res.map(function (r, i) { return [ALGS[i], hex(r)]; }));
-          msg.textContent = label;
-        });
+      function check() {
+        var want = expect.value.trim().toLowerCase().replace(/^(sha-?\d*[:=]\s*)/, '').replace(/[\s:]/g, '');
+        verdict.classList.remove('bad', 'good');
+        [].forEach.call(out.querySelectorAll('tr'), function (tr, i) { tr.classList.toggle('match', !!want && last[i] === want); });
+        if (!want || !last.length) { verdict.textContent = ''; return; }
+        var hit = last.indexOf(want);
+        verdict.textContent = hit !== -1 ? '✓ matches ' + ALGS[hit] : '✗ no match' + (/^[0-9a-f]{32}$/.test(want) ? ' (that looks like MD5, which browsers do not compute)' : '');
+        verdict.classList.add(hit !== -1 ? 'good' : 'bad');
       }
 
+      function reset() {
+        last = [];
+        out.innerHTML = '';
+        msg.textContent = '';
+        check();
+        return ++sequence;
+      }
+
+      function digest(data, label, request) {
+        if (!window.crypto || !crypto.subtle) { msg.textContent = 'needs https or localhost'; return; }
+        Promise.all(ALGS.map(function (a) { return crypto.subtle.digest(a, data); })).then(function (res) {
+          if (request !== sequence) return;
+          last = res.map(hex);
+          out.innerHTML = kv(res.map(function (r, i) { return [ALGS[i], last[i]]; }));
+          msg.textContent = label;
+          check();
+        }).catch(function () {
+          if (request === sequence) msg.textContent = 'could not compute the hash';
+        });
+      }
+      expect.addEventListener('input', check);
+
       inp.addEventListener('input', function () {
-        if (!inp.value) { out.innerHTML = ''; msg.textContent = ''; return; }
-        digest(new TextEncoder().encode(inp.value), inp.value.length + ' chars');
+        var request = reset();
+        if (!inp.value) return;
+        digest(new TextEncoder().encode(inp.value), inp.value.length + ' chars', request);
       });
       q(c, 'file').addEventListener('change', function (e) {
-        var f = e.target.files[0];
-        if (f) f.arrayBuffer().then(function (buf) { digest(buf, f.name + ' (' + f.size + ' bytes)'); });
+        var file = e.target.files[0];
+        var request = reset();
+        if (file) file.arrayBuffer().then(function (buffer) {
+          if (request === sequence) digest(buffer, file.name + ' (' + file.size + ' bytes)', request);
+        }).catch(function () {
+          if (request === sequence) msg.textContent = 'could not read that file';
+        });
       });
     }
   });
