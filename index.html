@@ -4,6 +4,8 @@ title: NOPHASE
 permalink: /
 ---
 {%- assign project_posts = site.posts | where_exp: "post", "post.categories contains 'Projects'" | sort: "date" -%}
+{%- assign news = site.data.start.news -%}
+{%- assign feeds = site.data.feeds -%}
 <div class="start" id="start">
 
   <section class="start-hero" id="hero" aria-label="NOPHASE">
@@ -20,29 +22,39 @@ permalink: /
     </div>
 
     <div class="hero-main">
+      {%- if news -%}
+      <a class="hero-news mono" href="{{ news.url | relative_url }}">
+        <span class="hero-news-tag">{{ news.label | default: 'new' }}</span> {{ news.text }} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </a>
+      {%- endif -%}
       <p class="kicker mono">bad tools &middot; creative instability</p>
       <h1 class="wordmark" id="wordmark" data-text="NOPHASE" aria-label="NOPHASE">NOPHASE</h1>
-      <form id="launcher" class="launcher" role="search" autocomplete="off">
-        <i class="fas fa-magnifying-glass launcher-icon" aria-hidden="true"></i>
-        <input
-          id="q"
-          class="mono"
-          type="text"
-          inputmode="search"
-          placeholder="search links or the web"
-          aria-label="Search links or the web"
-          spellcheck="false"
-          autocapitalize="off"
-        >
-        <kbd class="launcher-key" aria-hidden="true">/</kbd>
-      </form>
-      <p class="launcher-hint mono" id="hint" aria-live="polite">type to filter &middot; enter to open &middot; <span>g</span> / <span>yt</span> / <span>gh</span> prefixes search elsewhere</p>
+      <div class="launch-wrap">
+        <form id="launcher" class="launcher" role="search" autocomplete="off">
+          <i class="fas fa-magnifying-glass launcher-icon" aria-hidden="true"></i>
+          <input
+            id="q"
+            class="mono"
+            type="text"
+            inputmode="search"
+            placeholder="links, tools, projects or the web"
+            aria-label="Search links, tools, projects or the web"
+            aria-controls="results"
+            aria-autocomplete="list"
+            spellcheck="false"
+            autocapitalize="off"
+          >
+          <kbd class="launcher-key" aria-hidden="true">/</kbd>
+        </form>
+        <div class="launch-results mono" id="results" role="listbox" aria-label="Matches" hidden></div>
+      </div>
+      <p class="launcher-hint mono" id="hint" aria-live="polite">type to search this page &middot; <span>⇧↵</span> searches the web &middot; <span>g</span> / <span>yt</span> / <span>gh</span> / <span>cve</span> prefixes</p>
     </div>
 
     <div class="hero-foot mono">
       <span id="scope-info" aria-live="off"></span>
-      <a class="hero-cue mono" href="#h-links">links &amp; tools <i class="fas fa-arrow-down"></i></a>
-      <span class="hero-keys">click &middot; space re-roll &middot; 1-4 pick mode</span>
+      <a class="hero-cue mono" href="#h-links">links, feed &amp; tools <i class="fas fa-arrow-down"></i></a>
+      <span class="hero-keys">click &middot; space re-roll &middot; 1-4 mode &middot; c colour</span>
     </div>
   </section>
 
@@ -59,8 +71,10 @@ permalink: /
             <a
               class="link"
               href="{% if external == 'http' %}{{ link.url }}{% else %}{{ link.url | relative_url }}{% endif %}"
-              data-search="{{ link.name | downcase }} {{ link.keys | downcase }}"
+              data-search="{{ link.name | downcase }} {{ link.keys | downcase }} {{ group.title | downcase }}"
               data-name="{{ link.name }}"
+              data-group="{{ group.title }}"
+              data-icon="{{ link.icon | default: 'fas fa-link' }}"
             >
               <i class="{{ link.icon | default: 'fas fa-link' }} fa-fw" aria-hidden="true"></i>
               <span>{{ link.name }}</span>
@@ -72,18 +86,40 @@ permalink: /
       </div>
       {%- endfor -%}
     </div>
-    <p class="start-empty mono" id="no-links" hidden>no matching links</p>
   </section>
 
+  {%- if feeds -%}
+  <section class="start-section" aria-labelledby="h-feed">
+    <h2 class="start-h" id="h-feed"><span class="mono">02</span> Feed <em class="start-sub mono" id="feed-status">security &middot; network &middot; homelab &middot; dev</em></h2>
+    <div class="feed-cols is-loading" id="feed">
+      {%- for col in feeds.columns -%}
+      <div class="feed-col">
+        <h3 class="mono"><i class="{{ col.icon | default: 'fas fa-rss' }} fa-fw" aria-hidden="true"></i> {{ col.title }}</h3>
+        <ol class="feed-items" data-feed="{{ col.title }}">
+          {%- for src in col.sources -%}
+          <li><a href="{{ src.site }}" rel="noopener"><span class="ft">{{ src.name }}</span></a></li>
+          {%- endfor -%}
+        </ol>
+        <p class="feed-from mono">
+          {%- for src in col.sources -%}
+          <a href="{{ src.site }}" rel="noopener">{{ src.name }}</a>{% unless forloop.last %} &middot; {% endunless %}
+          {%- endfor -%}
+        </p>
+      </div>
+      {%- endfor -%}
+    </div>
+  </section>
+  {%- endif -%}
+
   <section class="start-section" aria-labelledby="h-tools">
-    <h2 class="start-h" id="h-tools"><span class="mono">02</span> Browser tools <em class="start-sub mono">everything runs locally in this page</em></h2>
+    <h2 class="start-h" id="h-tools"><span class="mono">03</span> Browser tools <em class="start-sub mono">runs in this page &middot; nothing is uploaded</em></h2>
     <div class="tools-bar" id="tools-bar"></div>
     <div class="tools" id="tools"></div>
   </section>
 
   <section class="start-section" aria-labelledby="h-projects">
-    <h2 class="start-h" id="h-projects"><span class="mono">03</span> Projects <a class="start-more mono" href="{{ '/projects/' | relative_url }}">all projects &rarr;</a></h2>
-    <div class="project-grid">
+    <h2 class="start-h" id="h-projects"><span class="mono">04</span> Projects <a class="start-more mono" href="{{ '/projects/' | relative_url }}">all projects &rarr;</a></h2>
+    <div class="project-grid" id="home-projects">
       {%- for post in project_posts -%}
         {% include project-card.html project=post %}
       {%- endfor -%}
@@ -91,9 +127,14 @@ permalink: /
   </section>
 
   <script type="application/json" id="start-config">{{ site.data.start.search | jsonify }}</script>
+  {%- if feeds %}
+  <script type="application/json" id="feed-config">{"url": {{ feeds.data_url | jsonify }}}</script>
+  {%- endif %}
   <script src="{{ '/assets/js/nophase/scope.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/nophase/tools-core.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/nophase/tools-music.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-midi.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/nophase/tools-dev.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-net.js' | relative_url }}" defer></script>
   <script src="{{ '/assets/js/nophase/start.js' | relative_url }}" defer></script>
 </div>

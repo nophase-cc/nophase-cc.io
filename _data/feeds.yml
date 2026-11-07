@@ -1,0 +1,49 @@
+# Home page feed: headlines for the security / network / homelab / dev side.
+#
+# GitHub Pages is static and most sites block cross-origin RSS reads, so a
+# scheduled workflow (.github/workflows/feed.yml) runs scripts/fetch-feeds.rb,
+# then force-pushes a single feed.json to the `feed-data` branch. The home page
+# reads that file at runtime from `data_url`, so headlines refresh without
+# rebuilding the site (which would also trip the PWA "update available" toast).
+#
+# Run it locally: ./scripts/feeds        (writes tmp/feed.json)
+#
+# `per_source` caps how many items one source can place in a column, so a busy
+# feed can't drown out the rest. `limit` is the number of headlines per column.
+
+data_url: https://raw.githubusercontent.com/nophase-cc/nophase-cc.io/feed-data/feed.json
+per_source: 2
+limit: 6
+
+columns:
+  - title: Security
+    icon: fas fa-shield-halved
+    sources:
+      - { name: BleepingComputer, site: "https://www.bleepingcomputer.com", feed: "https://www.bleepingcomputer.com/feed/" }
+      - { name: Krebs on Security, site: "https://krebsonsecurity.com", feed: "https://krebsonsecurity.com/feed/" }
+      - { name: SANS ISC, site: "https://isc.sans.edu", feed: "https://isc.sans.edu/rssfeed.xml" }
+      - { name: CISA, site: "https://www.cisa.gov/news-events/cybersecurity-advisories", feed: "https://www.cisa.gov/cybersecurity-advisories/all.xml" }
+
+  - title: Network
+    icon: fas fa-network-wired
+    sources:
+      - { name: Cloudflare, site: "https://blog.cloudflare.com", feed: "https://blog.cloudflare.com/rss/" }
+      - { name: APNIC, site: "https://blog.apnic.net", feed: "https://blog.apnic.net/feed/" }
+      - { name: RIPE Labs, site: "https://labs.ripe.net", feed: "https://labs.ripe.net/rss/" }
+      - { name: ipSpace.net, site: "https://blog.ipspace.net", feed: "https://blog.ipspace.net/atom.xml" }
+
+  - title: Homelab
+    icon: fas fa-server
+    sources:
+      - { name: selfh.st, site: "https://selfh.st", feed: "https://selfh.st/rss/" }
+      - { name: Jeff Geerling, site: "https://www.jeffgeerling.com", feed: "https://www.jeffgeerling.com/blog.xml" }
+      - { name: ServeTheHome, site: "https://www.servethehome.com", feed: "https://www.servethehome.com/feed/" }
+      - { name: CNX Software, site: "https://www.cnx-software.com", feed: "https://www.cnx-software.com/feed/" }
+
+  - title: Dev
+    icon: fas fa-code
+    sources:
+      - { name: Hacker News, site: "https://news.ycombinator.com", feed: "https://hnrss.org/frontpage?points=200" }
+      - { name: Lobsters, site: "https://lobste.rs", feed: "https://lobste.rs/rss" }
+      - { name: LWN, site: "https://lwn.net", feed: "https://lwn.net/headlines/rss" }
+      - { name: GitHub Blog, site: "https://github.blog", feed: "https://github.blog/feed/" }

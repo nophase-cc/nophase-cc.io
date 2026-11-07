@@ -1,9 +1,14 @@
 /*
  * NOPHASE browser tools: core.
  *
- * A tiny registry. tools-music.js and tools-dev.js call NP.tool({...}) to add
- * cards; start.js calls NP.render() once the page is ready. Everything runs
- * client-side, nothing is sent anywhere.
+ * A tiny registry. tools-music.js, tools-dev.js and tools-net.js call
+ * NP.tool({...}) to add cards; start.js calls NP.render() once the page is
+ * ready. Everything runs client-side. The only tool that touches the network is
+ * DNS lookup, and only when you press its button.
+ *
+ * Tool fields: id, group (music | net | sec | dev), title, keys (extra words for
+ * the launcher search), html, init(card), optional head (header controls) and
+ * wide (spans two columns).
  */
 (function () {
   'use strict';
@@ -216,7 +221,9 @@
 
   /* ---------- rendering ---------- */
 
-  var GROUPS = [['music', 'Music'], ['dev', 'Network & Dev']];
+  var GROUPS = [['music', 'Music'], ['net', 'Network'], ['sec', 'Security'], ['dev', 'Dev']];
+  NP.GROUPS = GROUPS;
+  var showGroup = null;
 
   NP.render = function () {
     var host = document.getElementById('tools');
@@ -226,7 +233,9 @@
     bar.innerHTML =
       '<div class="seg tabs mono" role="tablist" aria-label="Tool category">' +
       GROUPS.map(function (g) {
-        return '<button type="button" role="tab" class="seg-btn" data-v="' + g[0] + '">' + g[1] + '</button>';
+        var n = tools.filter(function (t) { return t.group === g[0]; }).length;
+        return '<button type="button" role="tab" class="seg-btn" data-v="' + g[0] + '">' + g[1] +
+          ' <span class="tab-n">' + n + '</span></button>';
       }).join('') + '</div>' +
       '<div class="audio-bar mono" id="audio-bar">' +
       '<span>sound</span>' +
@@ -255,12 +264,12 @@
       }
     });
 
-    function showGroup(g) {
+    showGroup = function (g) {
       NP.store('nophase.tab', g);
       [].forEach.call(host.children, function (c) { c.hidden = c.getAttribute('data-group') !== g; });
       document.getElementById('audio-bar').hidden = g !== 'music';
       setTab(g);
-    }
+    };
     var setTab = NP.seg(bar.querySelector('.tabs'), showGroup);
 
     var saved = NP.store('nophase.tab');
@@ -268,5 +277,33 @@
 
     NP.seg(document.getElementById('wave-seg'), function (w) { A.wave = w; });
     document.getElementById('vol').addEventListener('input', function (e) { A.setVol(parseFloat(e.target.value)); });
+
+    // deep links: /#tool-cidr opens the right tab and jumps to the card
+    var m = location.hash.match(/^#tool-([\w-]+)$/);
+    if (m) setTimeout(function () { NP.open(m[1]); }, 0);
+    window.addEventListener('hashchange', function () {
+      var h = location.hash.match(/^#tool-([\w-]+)$/);
+      if (h) NP.open(h[1]);
+    });
+  };
+
+  // Show a tool: switch to its tab, scroll to it, flash it and focus its first field.
+  NP.open = function (id) {
+    var def = tools.filter(function (t) { return t.id === id; })[0];
+    var card = document.getElementById('tool-' + id);
+    if (!def || !card || !showGroup) return false;
+    showGroup(def.group);
+    card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    card.classList.remove('flash');
+    void card.offsetWidth;
+    card.classList.add('flash');
+    var field = card.querySelector('input:not([type=file]):not([type=checkbox]):not([type=range]):not([type=color]), textarea, select');
+    if (field) setTimeout(function () { field.focus({ preventScroll: true }); }, 350);
+    return true;
+  };
+
+  NP.groupName = function (g) {
+    for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i][0] === g) return GROUPS[i][1];
+    return g;
   };
 })();

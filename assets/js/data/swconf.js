@@ -35,8 +35,15 @@ const swconf = {
       {%- comment -%} URLs containing the following prefixes will not be cached. {%- endcomment -%}
       urlPrefixes: [
         {% if site.analytics.goatcounter.id != nil and site.pageviews.provider == 'goatcounter' %}
-          'https://{{ site.analytics.goatcounter.id }}.goatcounter.com/counter/'
+          'https://{{ site.analytics.goatcounter.id }}.goatcounter.com/counter/',
         {% endif %}
+        {%- comment -%} The home page feed changes every couple of hours; always fetch it fresh. {%- endcomment -%}
+        {% if site.data.feeds.data_url %}
+          '{{ site.data.feeds.data_url }}',
+        {% endif %}
+        {%- comment -%} The DNS lookup tool must never answer from cache. {%- endcomment -%}
+        'https://cloudflare-dns.com/dns-query',
+        'https://dns.google/resolve'
       ]
     },
 

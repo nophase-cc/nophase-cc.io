@@ -26,6 +26,7 @@
     id: 'tempo',
     group: 'music',
     title: 'Tempo → time',
+    keys: 'bpm tap delay reverb ms note length dotted triplet',
     head: '<div class="seg mono" data-f="unit"><button type="button" class="seg-btn active" data-v="ms">ms</button>' +
       '<button type="button" class="seg-btn" data-v="hz">Hz</button></div>',
     html:
@@ -94,6 +95,7 @@
     id: 'pitch',
     group: 'music',
     title: 'Note ↔ Hz ↔ MIDI',
+    keys: 'frequency hz midi note number cents tuning a4 keyboard',
     head: '<label class="ref mono">A4 <input data-f="a4" class="field field-sm mono" type="number" min="400" max="480" step="0.1" value="440" aria-label="A4 reference in Hz"></label>',
     html:
       '<div class="pitch-row">' +
@@ -200,6 +202,7 @@
     id: 'cycle',
     group: 'music',
     title: 'LFO / cycle time',
+    keys: 'lfo rate period sync bars beats hz',
     html:
       '<div class="cyc-row">' +
       '<label><span class="mono">cycle length</span><input data-f="val" class="field mono" type="number" min="0" step="any" value="2"></label>' +
@@ -277,6 +280,7 @@
     id: 'scales',
     group: 'music',
     title: 'Scale & chord finder',
+    keys: 'scale mode chord key finder notes theory',
     wide: true,
     head: '<div class="seg mono" data-f="mode"><button type="button" class="seg-btn active" data-v="build">build</button>' +
       '<button type="button" class="seg-btn" data-v="find">identify</button></div>',
@@ -441,6 +445,7 @@
     id: 'prog',
     group: 'music',
     title: 'Chord progression generator',
+    keys: 'chord progression generator roman numerals theory',
     wide: true,
     head: '<div class="seg mono" data-f="mode"><button type="button" class="seg-btn active" data-v="major">major</button>' +
       '<button type="button" class="seg-btn" data-v="minor">minor</button></div>',
@@ -592,6 +597,7 @@
     id: 'euclid',
     group: 'music',
     title: 'Euclidean rhythm',
+    keys: 'euclidean rhythm sequencer polyrhythm drums pattern',
     html:
       '<div class="euc">' +
       '<svg viewBox="0 0 200 200" class="euc-svg" data-f="svg" role="img" aria-label="Euclidean rhythm circle"></svg>' +
@@ -744,6 +750,7 @@
     id: 'dice',
     group: 'music',
     title: 'Patch dice',
+    keys: 'random patch idea oblique strategy prompt',
     html:
       '<div class="dice" data-f="rows"></div>' +
       '<div class="pitch-ctl"><button type="button" class="tap-btn mono" data-f="roll"><i class="fas fa-dice fa-fw"></i> roll</button>' +
@@ -787,6 +794,7 @@
     id: 'conv',
     group: 'music',
     title: 'Audio converters',
+    keys: 'db gain decibel semitones ratio samples ms sample rate',
     html:
       '<div class="conv">' +
       '<div class="conv-row"><label><span class="mono">dB</span><input data-f="db" class="field mono" type="number" step="any" value="-6"></label>' +
@@ -811,6 +819,383 @@
         function (s) { return s * 1000 / parseFloat(sr.value); }, 7);
       sync();
       sr.addEventListener('change', sync);
+    }
+  });
+  /* =====================================================================
+   * Tuner (microphone, autocorrelation)
+   * ===================================================================== */
+  // McLeod's normalised square difference (NSDF) over a fixed window, then the
+  // first strong peak with parabolic interpolation. Returns Hz, or -1 when the
+  // signal is too quiet or has no clear period.
+  function detectPitch(buf, sr) {
+    var n = buf.length;
+    var rms = 0;
+    for (var i = 0; i < n; i++) rms += buf[i] * buf[i];
+    if (Math.sqrt(rms / n) < 0.008) return -1;
+    var maxLag = Math.min(Math.floor(sr / 30), Math.floor(n / 2));
+    var win = n - maxLag - 1;
+    var nsdf = new Float32Array(maxLag + 1);
+    var e0 = 0;
+    for (i = 0; i < win; i++) e0 += buf[i] * buf[i];
+    var eLag = e0;
+    for (var lag = 0; lag <= maxLag; lag++) {
+      var acf = 0;
+      for (var j = 0; j < win; j++) acf += buf[j] * buf[j + lag];
+      nsdf[lag] = (2 * acf) / (e0 + eLag || 1);
+      eLag += buf[lag + win] * buf[lag + win] - buf[lag] * buf[lag];
+    }
+    // peaks between positive-going and negative-going zero crossings
+    var peaks = [];
+    var minLag = Math.floor(sr / 1500);
+    i = 1;
+    while (i < maxLag && nsdf[i] > 0) i++;
+    while (i < maxLag) {
+      while (i < maxLag && nsdf[i] <= 0) i++;
+      var at = -1;
+      while (i < maxLag && nsdf[i] > 0) {
+        if (at < 0 || nsdf[i] > nsdf[at]) at = i;
+        i++;
+      }
+      if (at > minLag && at < maxLag) peaks.push(at);
+    }
+    if (!peaks.length) return -1;
+    var top = 0;
+    peaks.forEach(function (p) { top = Math.max(top, nsdf[p]); });
+    if (top < 0.5) return -1;
+    var pick = peaks.filter(function (p) { return nsdf[p] >= top * 0.9; })[0];
+    var x1 = nsdf[pick - 1];
+    var x2 = nsdf[pick];
+    var x3 = nsdf[pick + 1];
+    var a = (x1 + x3 - 2 * x2) / 2;
+    var shift = a ? (x1 - x3) / (4 * a) : 0;
+    return sr / (pick + shift);
+  }
+  NP.detectPitch = detectPitch;
+
+  NP.tool({
+    id: 'tuner',
+    group: 'music',
+    title: 'Tuner',
+    keys: 'tuner tune guitar bass pitch detect microphone mic cents',
+    head: '<button type="button" class="step-btn mono" data-f="go">start mic</button>',
+    html:
+      '<div class="tuner">' +
+      '<div class="tuner-note" data-f="note">--</div>' +
+      '<div class="tuner-meter" aria-hidden="true"><span class="tuner-zero"></span><span class="tuner-needle" data-f="needle"></span></div>' +
+      '<div class="tuner-read mono"><span data-f="cents">± 0 cents</span><span data-f="hz">0.00 Hz</span></div>' +
+      '</div>' +
+      '<p class="tool-note mono" data-f="msg">Uses your microphone. Audio stays in this tab. A4 follows the Note ↔ Hz tool.</p>',
+    init: function (c) {
+      var noteEl = q(c, 'note');
+      var needle = q(c, 'needle');
+      var centsEl = q(c, 'cents');
+      var hzEl = q(c, 'hz');
+      var msg = q(c, 'msg');
+      var btn = q(c, 'go');
+      var stream = null;
+      var src = null;
+      var analyser = null;
+      var timer = 0;
+      var buf = null;
+      var recent = [];
+
+      function show(f) {
+        if (f <= 0) { c.classList.remove('live'); return; }
+        recent.push(f);
+        if (recent.length > 5) recent.shift();
+        var sorted = recent.slice().sort(function (x, y) { return x - y; });
+        f = sorted[Math.floor(sorted.length / 2)];
+        var m = 69 + 12 * Math.log(f / NP.a4.v) / Math.LN2;
+        var near = Math.round(m);
+        var cents = Math.round((m - near) * 100);
+        noteEl.textContent = NP.midiName(near);
+        needle.style.left = (50 + cents) + '%';
+        centsEl.textContent = (cents > 0 ? '+' : cents < 0 ? '−' : '± ') + Math.abs(cents) + ' cents';
+        hzEl.textContent = f.toFixed(2) + ' Hz';
+        c.classList.add('live');
+        c.classList.toggle('in-tune', Math.abs(cents) <= 4);
+      }
+
+      function stop() {
+        clearInterval(timer);
+        if (src) src.disconnect();
+        if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+        stream = src = null;
+        btn.textContent = 'start mic';
+        btn.classList.remove('active');
+        c.classList.remove('live', 'in-tune');
+      }
+
+      btn.addEventListener('click', function () {
+        if (stream) { stop(); return; }
+        var ac = NP.audio.get();
+        if (!ac || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          msg.textContent = 'No microphone access in this browser (it needs https).';
+          return;
+        }
+        navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+        }).then(function (s) {
+          stream = s;
+          src = ac.createMediaStreamSource(s);
+          analyser = ac.createAnalyser();
+          analyser.fftSize = 4096;
+          buf = new Float32Array(analyser.fftSize);
+          src.connect(analyser);
+          recent = [];
+          timer = setInterval(function () {
+            analyser.getFloatTimeDomainData(buf);
+            show(detectPitch(buf, ac.sampleRate));
+          }, 80);
+          btn.textContent = 'stop';
+          btn.classList.add('active');
+        }, function () {
+          msg.textContent = 'Microphone permission was denied.';
+        });
+      });
+      document.addEventListener('visibilitychange', function () { if (document.hidden && stream) stop(); });
+    }
+  });
+
+  /* =====================================================================
+   * Metronome (lookahead scheduler on the audio clock)
+   * ===================================================================== */
+  NP.tool({
+    id: 'metro',
+    group: 'music',
+    title: 'Metronome',
+    keys: 'metronome click tempo bpm beat count in',
+    html:
+      '<div class="bpm-row">' +
+      '<label class="bpm-field"><input data-f="bpm" class="field mono" type="number" min="20" max="400" step="0.1" aria-label="BPM"><span class="mono">BPM</span></label>' +
+      '<button type="button" class="tap-btn mono" data-f="go">START</button></div>' +
+      '<div class="beats" data-f="beats"></div>' +
+      '<div class="gen-row mono">' +
+      '<label class="ref">beats <input data-f="n" class="field field-sm" type="number" min="1" max="16" value="4"></label>' +
+      '<div class="seg" data-f="sub"><button type="button" class="seg-btn active" data-v="1">♩</button>' +
+      '<button type="button" class="seg-btn" data-v="2">♪♪</button><button type="button" class="seg-btn" data-v="3">3</button>' +
+      '<button type="button" class="seg-btn" data-v="4">♬</button></div>' +
+      '<label class="check"><input type="checkbox" data-f="accent" checked> accent 1</label></div>' +
+      '<p class="tool-note mono">shares its tempo with the other tools</p>',
+    init: function (c) {
+      var bpmEl = q(c, 'bpm');
+      var beatsEl = q(c, 'beats');
+      var go = q(c, 'go');
+      var sub = 1;
+      var timer = 0;
+      var next = 0;
+      var step = 0;
+      var queue = [];
+      var raf = 0;
+
+      function beats() { return NP.clamp(parseInt(q(c, 'n').value, 10) || 4, 1, 16); }
+      function drawDots(active) {
+        var n = beats();
+        var html = '';
+        for (var i = 0; i < n; i++) html += '<span class="beat' + (i === active ? ' on' : '') + (i === 0 ? ' first' : '') + '"></span>';
+        beatsEl.innerHTML = html;
+      }
+
+      function click(when, level) {
+        var ac = NP.audio.ctx;
+        var osc = ac.createOscillator();
+        var g = ac.createGain();
+        osc.frequency.value = level === 2 ? 1760 : level === 1 ? 1175 : 880;
+        g.gain.setValueAtTime(level === 0 ? 0.12 : 0.32, when);
+        g.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
+        osc.connect(g).connect(NP.audio.master);
+        osc.start(when);
+        osc.stop(when + 0.06);
+      }
+
+      function schedule() {
+        var ac = NP.audio.ctx;
+        var spb = 60 / NP.bpm.get() / sub;
+        while (next < ac.currentTime + 0.12) {
+          var beat = Math.floor(step / sub) % beats();
+          var onBeat = step % sub === 0;
+          click(next, !onBeat ? 0 : beat === 0 && q(c, 'accent').checked ? 2 : 1);
+          if (onBeat) queue.push([next, beat]);
+          next += spb;
+          step++;
+        }
+      }
+
+      function paint() {
+        raf = requestAnimationFrame(paint);
+        var now = NP.audio.ctx.currentTime;
+        var cur = -1;
+        while (queue.length && queue[0][0] <= now) cur = queue.shift()[1];
+        if (cur !== -1) drawDots(cur);
+      }
+
+      function stop() {
+        clearInterval(timer);
+        cancelAnimationFrame(raf);
+        timer = 0;
+        queue = [];
+        go.textContent = 'START';
+        go.classList.remove('active');
+        drawDots(-1);
+      }
+
+      go.addEventListener('click', function () {
+        if (timer) { stop(); return; }
+        var ac = NP.audio.get();
+        if (!ac) return;
+        step = 0;
+        next = ac.currentTime + 0.06;
+        schedule();
+        timer = setInterval(schedule, 25);
+        paint();
+        go.textContent = 'STOP';
+        go.classList.add('active');
+      });
+
+      bpmEl.value = NP.fmt(NP.bpm.get(), 4);
+      NP.bpm.on(function (v, from) { if (from !== 'metro') bpmEl.value = NP.fmt(v, 4); });
+      bpmEl.addEventListener('input', function () { if (parseFloat(bpmEl.value) > 0) NP.bpm.set(bpmEl.value, 'metro'); });
+      q(c, 'n').addEventListener('input', function () { drawDots(-1); });
+      NP.seg(q(c, 'sub'), function (v) { sub = parseInt(v, 10); });
+      document.addEventListener('visibilitychange', function () { if (document.hidden && timer) stop(); });
+      drawDots(-1);
+    }
+  });
+
+  /* =====================================================================
+   * Test tone & noise
+   * ===================================================================== */
+  function noiseBuffer(ac, kind) {
+    var len = ac.sampleRate * 4;
+    var buffer = ac.createBuffer(1, len, ac.sampleRate);
+    var d = buffer.getChannelData(0);
+    var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    var sum = 0;
+    for (var i = 0; i < len; i++) {
+      var w = Math.random() * 2 - 1;
+      if (kind === 'pink') {
+        // Paul Kellet's refined pink filter
+        b0 = 0.99886 * b0 + w * 0.0555179;
+        b1 = 0.99332 * b1 + w * 0.0750759;
+        b2 = 0.969 * b2 + w * 0.153852;
+        b3 = 0.8665 * b3 + w * 0.3104856;
+        b4 = 0.55 * b4 + w * 0.5329522;
+        b5 = -0.7616 * b5 - w * 0.016898;
+        d[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362;
+        b6 = w * 0.115926;
+      } else d[i] = w;
+      sum += d[i] * d[i];
+    }
+    // normalise to the RMS of a full-scale sine, so a level means roughly the same loudness for each
+    var k = Math.SQRT1_2 / Math.sqrt(sum / len);
+    for (i = 0; i < len; i++) d[i] = NP.clamp(d[i] * k, -1, 1);
+    return buffer;
+  }
+
+  NP.tool({
+    id: 'tone',
+    group: 'music',
+    title: 'Test tone & noise',
+    keys: 'test tone sine sweep pink white noise generator speaker check left right level dbfs',
+    html:
+      '<div class="seg mono" data-f="kind"><button type="button" class="seg-btn active" data-v="sine">sine</button>' +
+      '<button type="button" class="seg-btn" data-v="sweep">sweep</button><button type="button" class="seg-btn" data-v="pink">pink</button>' +
+      '<button type="button" class="seg-btn" data-v="white">white</button></div>' +
+      '<div class="cyc-row" data-f="freqrow"><label><span class="mono">frequency (Hz)</span>' +
+      '<input data-f="freq" class="field mono" type="number" min="20" max="20000" step="any" value="1000"></label>' +
+      '<label><span class="mono">sweep (s)</span><input data-f="dur" class="field mono" type="number" min="1" max="60" value="10"></label></div>' +
+      '<input data-f="fslider" type="range" min="0" max="1000" value="566" aria-label="Frequency (log scale)">' +
+      '<div class="gen-row mono"><label class="ref">level <input data-f="db" class="field field-sm" type="number" min="-60" max="-6" step="1" value="-24"> dBFS</label>' +
+      '<div class="seg" data-f="pan"><button type="button" class="seg-btn" data-v="-1">L</button>' +
+      '<button type="button" class="seg-btn active" data-v="0">both</button><button type="button" class="seg-btn" data-v="1">R</button></div></div>' +
+      '<button type="button" class="tap-btn mono" data-f="go">PLAY</button>' +
+      '<p class="tool-note mono" data-f="msg">plays at the level shown and skips the volume slider. Start low.</p>',
+    init: function (c) {
+      var kind = 'sine';
+      var pan = 0;
+      var freq = q(c, 'freq');
+      var slider = q(c, 'fslider');
+      var go = q(c, 'go');
+      var nodes = null;
+      var buffers = {};
+      var sweepTimer = 0;
+
+      function sliderToHz(v) { return 20 * Math.pow(1000, v / 1000); }
+      function hzToSlider(f) { return Math.round(1000 * Math.log(f / 20) / Math.log(1000)); }
+      function level() { return Math.pow(10, NP.clamp(parseFloat(q(c, 'db').value) || -24, -60, -6) / 20); }
+
+      function stop() {
+        clearTimeout(sweepTimer);
+        if (nodes) {
+          var ac = NP.audio.ctx;
+          nodes.gain.gain.setTargetAtTime(0, ac.currentTime, 0.01);
+          var src = nodes.src;
+          setTimeout(function () { try { src.stop(); } catch (e) { /* already stopped */ } }, 80);
+        }
+        nodes = null;
+        go.textContent = 'PLAY';
+        go.classList.remove('active');
+      }
+
+      function play() {
+        var ac = NP.audio.get();
+        if (!ac) return;
+        var gain = ac.createGain();
+        var panner = ac.createStereoPanner ? ac.createStereoPanner() : null;
+        var src;
+        var now = ac.currentTime;
+        if (kind === 'pink' || kind === 'white') {
+          src = ac.createBufferSource();
+          src.buffer = buffers[kind] || (buffers[kind] = noiseBuffer(ac, kind));
+          src.loop = true;
+        } else {
+          src = ac.createOscillator();
+          src.type = 'sine';
+          if (kind === 'sweep') {
+            var dur = NP.clamp(parseFloat(q(c, 'dur').value) || 10, 1, 60);
+            src.frequency.setValueAtTime(20, now);
+            src.frequency.exponentialRampToValueAtTime(20000, now + dur);
+            sweepTimer = setTimeout(stop, dur * 1000);
+          } else src.frequency.value = NP.clamp(parseFloat(freq.value) || 1000, 20, 20000);
+        }
+        // the level is a sine's peak; noise buffers already carry a sine's RMS
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(level(), now + 0.03);
+        src.connect(gain);
+        if (panner) { panner.pan.value = pan; gain.connect(panner).connect(ac.destination); } else gain.connect(ac.destination);
+        src.start();
+        nodes = { src: src, gain: gain, panner: panner };
+        go.textContent = 'STOP';
+        go.classList.add('active');
+      }
+
+      NP.seg(q(c, 'kind'), function (v) {
+        kind = v;
+        q(c, 'freqrow').hidden = kind === 'pink' || kind === 'white';
+        slider.hidden = kind !== 'sine';
+        if (nodes) { stop(); play(); }
+      });
+      NP.seg(q(c, 'pan'), function (v) {
+        pan = parseFloat(v);
+        if (nodes && nodes.panner) nodes.panner.pan.setTargetAtTime(pan, NP.audio.ctx.currentTime, 0.01);
+      });
+      freq.addEventListener('input', function () {
+        var f = parseFloat(freq.value);
+        if (f >= 20 && f <= 20000) {
+          slider.value = hzToSlider(f);
+          if (nodes && kind === 'sine') nodes.src.frequency.setTargetAtTime(f, NP.audio.ctx.currentTime, 0.01);
+        }
+      });
+      slider.addEventListener('input', function () {
+        var f = sliderToHz(parseFloat(slider.value));
+        freq.value = f < 100 ? f.toFixed(1) : Math.round(f);
+        if (nodes && kind === 'sine') nodes.src.frequency.setTargetAtTime(f, NP.audio.ctx.currentTime, 0.01);
+      });
+      q(c, 'db').addEventListener('input', function () {
+        if (nodes) nodes.gain.gain.setTargetAtTime(level(), NP.audio.ctx.currentTime, 0.02);
+      });
+      go.addEventListener('click', function () { if (nodes) stop(); else play(); });
+      document.addEventListener('visibilitychange', function () { if (document.hidden && nodes) stop(); });
     }
   });
 })();

@@ -1,0 +1,53 @@
+name: Refresh home feed
+
+# Builds feed.json from _data/feeds.yml and force-pushes it as the only commit
+# on the `feed-data` branch. The home page reads it from raw.githubusercontent,
+# so the site itself is not rebuilt. Note: GitHub pauses scheduled workflows
+# after 60 days without repository activity; re-enable it from the Actions tab.
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  # also refresh right away when the source list or fetcher changes
+  push:
+    branches: [main]
+    paths:
+      - _data/feeds.yml
+      - scripts/fetch-feeds.rb
+      - .github/workflows/feed.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feed
+  cancel-in-progress: true
+
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4
+
+      - name: Fetch feeds
+        run: ruby scripts/fetch-feeds.rb --out "$RUNNER_TEMP/feed-data/feed.json"
+
+      - name: Publish to feed-data branch
+        working-directory: ${{ runner.temp }}/feed-data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b feed-data
+          git add feed.json
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "feed: $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" feed-data

@@ -2,7 +2,7 @@
  * NOPHASE start page: generative "phase scope" (full-page backdrop).
  *
  * Every load (and every click / space press) rolls a fresh seed, palette and
- * visual mode. All four modes are driven by a seeded PRNG, react to the pointer,
+ * visual mode; `c` swaps only the colours. All four modes are driven by a seeded PRNG, react to the pointer,
  * and honour prefers-reduced-motion (a single static frame is drawn instead).
  */
 (function () {
@@ -23,13 +23,49 @@
   var BG = '11, 11, 14';
   var BG_HEX = '#0b0b0e';
 
+  // Two bright colours per palette: `a` also becomes the page accent, so keep
+  // both light enough to read on near-black. The order flips at random, and a
+  // share of rolls make a fresh colour-harmony pair instead (see makePalette).
   var PALETTES = [
     { name: 'copper', a: '#ff8a4c', b: '#7fb4ff' },
     { name: 'acid', a: '#c6ff4d', b: '#ff4dcb' },
     { name: 'ice', a: '#8ef0ff', b: '#b69bff' },
     { name: 'signal', a: '#ff4d5e', b: '#ffd166' },
-    { name: 'bone', a: '#f3ead8', b: '#ff7a45' }
+    { name: 'bone', a: '#f3ead8', b: '#ff7a45' },
+    { name: 'phosphor', a: '#39ff88', b: '#1fd1c1' },
+    { name: 'amber crt', a: '#ffb000', b: '#ff6a00' },
+    { name: 'vapor', a: '#ff71ce', b: '#01cdfe' },
+    { name: 'sunset', a: '#ff5f6d', b: '#ffc371' },
+    { name: 'lagoon', a: '#00e5c7', b: '#4f8dff' },
+    { name: 'orchid', a: '#e47cf0', b: '#7cf0c8' },
+    { name: 'citrus', a: '#ffe14d', b: '#4dff9a' },
+    { name: 'ember', a: '#ff3d2e', b: '#ffb86b' },
+    { name: 'glacier', a: '#c9f1ff', b: '#6fa8ff' },
+    { name: 'tape', a: '#ffcf8a', b: '#e06c75' },
+    { name: 'neon', a: '#00f0ff', b: '#ff00a8' },
+    { name: 'moss', a: '#b4e86a', b: '#e8d06a' },
+    { name: 'sakura', a: '#ffb7d5', b: '#a7c7ff' },
+    { name: 'riso', a: '#ff48b0', b: '#3d9bff' },
+    { name: 'ultraviolet', a: '#9d7bff', b: '#ff7bd5' },
+    { name: 'reef', a: '#ff7f6b', b: '#3ff2d0' },
+    { name: 'gold leaf', a: '#ffd36b', b: '#fff4d6' },
+    { name: 'mint chip', a: '#8affc1', b: '#c2a6ff' },
+    { name: 'infrared', a: '#ff2a6d', b: '#ff9e2a' },
+    { name: 'arctic', a: '#7df9ff', b: '#f2f7ff' },
+    { name: 'lime soda', a: '#d4ff3f', b: '#3fd4ff' },
+    { name: 'plasma', a: '#ff5ef2', b: '#ffd25e' },
+    { name: 'verdigris', a: '#2ee6d6', b: '#e6a92e' },
+    { name: 'graphite', a: '#f2f2f2', b: '#8c93a3' },
+    { name: 'blood orange', a: '#ff6b3d', b: '#ff3d77' },
+    { name: 'tron', a: '#6ef3ff', b: '#ff9d3b' },
+    { name: 'lavender haze', a: '#c9b6ff', b: '#ffd6e8' },
+    { name: 'toxic', a: '#a6ff00', b: '#ffe600' },
+    { name: 'deep sea', a: '#3be8ff', b: '#7a6bff' }
   ];
+
+  // relationship between the two generated hues, in degrees
+  var HARMONIES = [['complement', 180], ['split', 150], ['triad', 120], ['square', 90], ['analog', 40]];
+  var GENERATED_SHARE = 0.3;
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -64,6 +100,40 @@
   function rgba(hex, alpha) {
     var c = rgb(hex);
     return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+  }
+
+  function hslHex(h, sat, light) {
+    sat /= 100;
+    light /= 100;
+    var amp = sat * Math.min(light, 1 - light);
+    function f(n) {
+      var k = (n + h / 30) % 12;
+      var v = light - amp * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+      return ('0' + Math.round(v * 255).toString(16)).slice(-2);
+    }
+    return '#' + f(0) + f(8) + f(4);
+  }
+
+  // blues and violets look darker at the same HSL lightness; lift them so the
+  // accent stays readable as text on the near-black background
+  function lift(hue) {
+    return hue > 200 && hue < 290 ? 8 : 0;
+  }
+
+  // rand() -> 0..1. Returns { name, a, b }.
+  function makePalette(rand) {
+    if (rand() < GENERATED_SHARE) {
+      var hue = Math.floor(rand() * 360);
+      var hm = HARMONIES[Math.floor(rand() * HARMONIES.length)];
+      var hue2 = (hue + hm[1] * (rand() < 0.5 ? -1 : 1) + 360) % 360;
+      return {
+        name: hm[0] + ' ' + hue + '°',
+        a: hslHex(hue, 85 + rand() * 15, 62 + rand() * 10 + lift(hue)),
+        b: hslHex(hue2, 75 + rand() * 25, 58 + rand() * 14 + lift(hue2))
+      };
+    }
+    var p = PALETTES[Math.floor(rand() * PALETTES.length)];
+    return rand() < 0.5 ? { name: p.name, a: p.a, b: p.b } : { name: p.name, a: p.b, b: p.a };
   }
 
   function mix(hexA, hexB, k, alpha) {
@@ -374,7 +444,9 @@
 
   var seed = 0;
   var modeIndex = -1;
-  var pal = PALETTES[0];
+  // one live object: scenes read pal.a / pal.b every frame, so recolouring
+  // (the `c` key) can swap colours without rebuilding the scene
+  var pal = { name: PALETTES[0].name, a: PALETTES[0].a, b: PALETTES[0].b };
   var scene = null;
   var clock = 0;
   var raf = 0;
@@ -391,14 +463,27 @@
     root.style.setProperty('--accent-2', pal.b);
   }
 
-  function build(forceMode) {
+  function setPalette(p) {
+    pal.name = p.name;
+    pal.a = p.a;
+    pal.b = p.b;
+    applyPalette();
+  }
+
+  function recolour() {
+    setPalette(makePalette(Math.random));
+    setInfo();
+    if (reduceMotion.matches) build(modeIndex, true);
+  }
+
+  function build(forceMode, keepPalette) {
     var R = makeRandom(seed);
-    pal = R.pick(PALETTES);
+    var rolled = makePalette(R.next);
+    if (!keepPalette) setPalette(rolled);
     // always consume the mode draw so a given seed + mode builds the same scene
     var drawn = R.int(0, SCENES.length - 1);
     if (typeof forceMode === 'number') modeIndex = forceMode;
     else modeIndex = drawn === modeIndex ? (drawn + 1) % SCENES.length : drawn;
-    applyPalette();
     resize();
     scene = SCENES[modeIndex](R, pal);
     setInfo();
@@ -437,7 +522,7 @@
 
   // click empty space (hero, gaps between sections) to re-roll
   root.addEventListener('click', function (e) {
-    if (e.target.closest('input, button, a, form, select, textarea, label, .tool, .link-group, .project-card, .tools-bar, .start-h')) return;
+    if (e.target.closest('input, button, a, form, select, textarea, label, .tool, .link-group, .feed-col, .launch-wrap, .project-card, .tools-bar, .start-h')) return;
     reroll();
   });
 
@@ -453,6 +538,8 @@
       reroll();
     } else if (/^[1-4]$/.test(e.key)) {
       reroll(Number(e.key) - 1);
+    } else if (e.key === 'c' || e.key === 'C') {
+      recolour();
     }
   });
 
@@ -475,14 +562,14 @@
     resizeTimer = setTimeout(function () {
       var wasRunning = !!raf;
       stop();
-      build(modeIndex);
+      build(modeIndex, true);
       if (wasRunning) start();
     }, 150);
   });
 
   reduceMotion.addEventListener('change', function () {
     stop();
-    build(modeIndex);
+    build(modeIndex, true);
     start();
   });
 

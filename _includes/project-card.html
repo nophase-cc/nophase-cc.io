@@ -22,6 +22,11 @@
     </span>
     <span class="project-card-title">{{ p.title }}</span>
     <span class="project-card-desc">{{ p.description }}</span>
-    <span class="project-card-foot">{{ p.stack }}</span>
+    <span class="project-card-foot">
+      {{- p.stack -}}
+      {%- if p.version %} &middot; v{{ p.version }}{% endif -%}
+      {%- assign gh = p.links | where_exp: "l", "l.url contains 'github.com'" -%}
+      {%- if gh.size > 0 %}<i class="fab fa-github project-card-src" title="Source on GitHub" aria-label="Source on GitHub"></i>{% endif -%}
+    </span>
   </span>
 </a>

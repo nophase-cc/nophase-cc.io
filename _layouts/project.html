@@ -22,13 +22,19 @@ panel_includes:
 
     <ul class="project-chips" data-toc-skip>
       {% if page.status %}<li class="chip chip-status">{{ page.status }}</li>{% endif %}
+      {% if page.version %}<li class="chip chip-status">v{{ page.version }}</li>{% endif %}
       {% if page.kind %}<li class="chip">{{ page.kind }}</li>{% endif %}
       {% if page.format %}<li class="chip">{{ page.format }}</li>{% endif %}
       {% if page.stack %}<li class="chip">{{ page.stack }}</li>{% endif %}
     </ul>
 
-    <p class="project-jump" data-toc-skip>
-      <a href="#technical-docs"><i class="fas fa-book fa-fw"></i> Jump to technical docs</a>
+    <p class="project-links" data-toc-skip>
+      {%- for link in page.links -%}
+        <a class="project-btn{% if link.primary %} primary{% endif %}" href="{{ link.url }}" rel="noopener">
+          <i class="{{ link.icon | default: 'fas fa-link' }} fa-fw" aria-hidden="true"></i> {{ link.name }}
+        </a>
+      {%- endfor -%}
+      <a class="project-btn" href="#technical-docs"><i class="fas fa-book fa-fw" aria-hidden="true"></i> Technical docs</a>
     </p>
   </header>
 
