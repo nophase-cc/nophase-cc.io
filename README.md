@@ -32,6 +32,20 @@ The server uses `--incremental` for faster rebuilds while you develop.
 3. Commit only when it looks right.
 4. Push to GitHub.
 
+## Deployment Updates and Offline Cache
+
+The homepage tool scripts and site stylesheet use a shared build version in
+their URLs. The service worker revalidates online page navigations, JavaScript
+and CSS, retaining the last successful response as an offline fallback. Images
+remain cache-first; feed and DNS requests bypass the worker cache.
+
+An already-open tab can keep the previous worker until you accept its **Update**
+prompt. If an older worker keeps serving a stale homepage, open
+`https://nophase.cc/?refresh=tools-v2` once to fetch the versioned assets, then
+accept **Update**. This does not clear saved tool or visual preferences.
+
+Run the cache regression tests with `npm run test:pwa`.
+
 ## Site Structure
 
 - **Home (`index.html`)**: browser start page. A full-page generative

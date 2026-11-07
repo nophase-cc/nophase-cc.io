@@ -1,4 +1,5 @@
 <head>
+  {% assign asset_version = site.time | date: '%s' %}
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f7f7">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1b1e">
@@ -87,7 +88,7 @@
   {% endunless %}
 
   <!-- Theme style -->
-  <link rel="stylesheet" href="{{ '/assets/css/:THEME.css' | replace: ':THEME', site.theme | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/:THEME.css' | replace: ':THEME', site.theme | relative_url }}?v={{ asset_version }}">
 
   <!-- Web Font -->
   <link rel="stylesheet" href="{{ site.data.origin[type].webfonts | relative_url }}">
@@ -112,7 +113,7 @@
 
   <!-- Scripts -->
 
-  <script src="{{ '/assets/js/dist/theme.min.js' | relative_url }}"></script>
+  <script src="{{ '/assets/js/dist/theme.min.js' | relative_url }}?v={{ asset_version }}"></script>
 
   {% include js-selector.html lang=lang %}
 
@@ -121,7 +122,7 @@
     {% if site.pwa.enabled %}
       <script
         defer
-        src="{{ '/app.min.js' | relative_url }}?baseurl={{ site.baseurl | default: '' }}&register={{ site.pwa.cache.enabled }}"
+        src="{{ '/app.min.js' | relative_url }}?baseurl={{ site.baseurl | default: '' }}&amp;register={{ site.pwa.cache.enabled }}&amp;v={{ asset_version }}"
       ></script>
     {% endif %}
 

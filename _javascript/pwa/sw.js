@@ -32,7 +32,9 @@ self.addEventListener('install', (event) => {
 
   event.waitUntil(
     caches.open(swconf.cacheName).then((cache) => {
-      return cache.addAll(swconf.resources);
+      return cache.addAll(
+        swconf.resources.map((url) => new Request(url, { cache: 'reload' }))
+      );
     })
   );
 });
@@ -62,31 +64,53 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.headers.has('range')) {
+  if (
+    purge ||
+    event.request.method !== 'GET' ||
+    event.request.headers.has('range') ||
+    !verifyUrl(event.request.url)
+  ) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
+  const url = new URL(event.request.url);
+  const fresh =
+    url.origin === self.location.origin &&
+    (event.request.mode === 'navigate' || /\.(?:css|js)$/i.test(url.pathname));
 
-      return fetch(event.request).then((response) => {
-        const url = event.request.url;
-
-        if (purge || event.request.method !== 'GET' || !verifyUrl(url)) {
-          return response;
-        }
-
-        // See: <https://developers.google.com/web/fundamentals/primers/service-workers#cache_and_return_requests>
-        let responseToCache = response.clone();
-
-        caches.open(swconf.cacheName).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return response;
-      });
-    })
-  );
+  event.respondWith(respond(event, fresh));
 });
+
+async function respond(event, fresh) {
+  const cache = await caches.open(swconf.cacheName);
+  const cached = await cache.match(event.request);
+
+  if (!fresh && cached) {
+    return cached;
+  }
+
+  try {
+    const response = await fetch(
+      event.request,
+      fresh ? { cache: 'no-cache' } : undefined
+    );
+
+    if (!response.ok && cached) {
+      return cached;
+    }
+
+    if (response.ok || response.type === 'opaque') {
+      event.waitUntil(
+        cache.put(event.request, response.clone()).catch(() => {})
+      );
+    }
+
+    return response;
+  } catch (error) {
+    if (cached) {
+      return cached;
+    }
+
+    throw error;
+  }
+}

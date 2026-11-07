@@ -6,11 +6,15 @@ on:
       - "_javascript/**/*.js"
       - ".github/workflows/scripts/**/*.js"
       - "*.js"
+      - "tools/test-pwa.mjs"
+      - "package.json"
   pull_request:
     paths:
       - "_javascript/**/*.js"
       - ".github/workflows/scripts/*.js"
       - "*.js"
+      - "tools/test-pwa.mjs"
+      - "package.json"
 
 jobs:
   lint-js:
@@ -28,3 +32,6 @@ jobs:
 
       - name: Lint JS
         run: npm run lint:js
+
+      - name: Test PWA caching
+        run: npm run test:pwa

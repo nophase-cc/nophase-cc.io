@@ -6,11 +6,11 @@ permalink: '/:path/swconf.js'
 
 const swconf = {
   {% if site.pwa.cache.enabled %}
-    cacheName: 'chirpy-{{ "now" | date: "%s" }}',
+    cacheName: 'chirpy-{{ site.time | date: "%s" }}',
 
     {%- comment -%} Resources added to the cache during PWA installation. {%- endcomment -%}
     resources: [
-      '{{ "/assets/css/:THEME.css" | replace: ':THEME', site.theme | relative_url }}',
+      '{{ "/assets/css/:THEME.css" | replace: ':THEME', site.theme | relative_url }}?v={{ site.time | date: "%s" }}',
       '{{ "/" | relative_url }}',
       {% for tab in site.tabs %}
         '{{- tab.url | relative_url -}}',

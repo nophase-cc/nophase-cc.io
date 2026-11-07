@@ -6,6 +6,7 @@ permalink: /
 {%- assign project_posts = site.posts | where_exp: "post", "post.categories contains 'Projects'" | sort: "date" -%}
 {%- assign news = site.data.start.news -%}
 {%- assign feeds = site.data.feeds -%}
+{%- assign asset_version = site.time | date: '%s' -%}
 <div class="start" id="start">
 
   <section class="start-hero" id="hero" aria-label="NOPHASE">
@@ -130,11 +131,11 @@ permalink: /
   {%- if feeds %}
   <script type="application/json" id="feed-config">{"url": {{ feeds.data_url | jsonify }}}</script>
   {%- endif %}
-  <script src="{{ '/assets/js/nophase/scope.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/tools-core.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/tools-music.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/tools-midi.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/tools-dev.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/tools-net.js' | relative_url }}" defer></script>
-  <script src="{{ '/assets/js/nophase/start.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/nophase/scope.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-core.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-music.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-midi.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-dev.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/tools-net.js' | relative_url }}?v={{ asset_version }}" defer></script>
+  <script src="{{ '/assets/js/nophase/start.js' | relative_url }}?v={{ asset_version }}" defer></script>
 </div>

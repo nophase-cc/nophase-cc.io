@@ -22,7 +22,8 @@
     "lint:js": "eslint",
     "lint:scss": "stylelint _sass/**/*.scss",
     "lint:fix:scss": "npm run lint:scss -- --fix",
-    "test": "npm run lint:js && npm run lint:scss",
+    "test": "npm run lint:js && npm run lint:scss && npm run test:pwa",
+    "test:pwa": "node --test tools/test-pwa.mjs",
     "prepare": "husky"
   },
   "dependencies": {
