@@ -1,0 +1,173 @@
+{
+  "generated": "2026-11-21T12:41:08Z",
+  "columns": [
+    {
+      "title": "Security",
+      "items": [
+        {
+          "title": "A Single Malicious Webpage Let Researchers Hijack Meta Muse and Access Private Chats",
+          "url": "https://thehackernews.com/2026/11/a-single-malicious-webpage-let.html",
+          "source": "The Hacker News",
+          "date": "2026-11-21T11:53:07Z"
+        },
+        {
+          "title": "GnuPG Warns Critical GPGME Flaw Could Expose App Data via Malicious OpenPGP Keys",
+          "url": "https://thehackernews.com/2026/11/gnupg-warns-critical-gpgme-flaw-could.html",
+          "source": "The Hacker News",
+          "date": "2026-11-21T11:05:53Z"
+        },
+        {
+          "title": "CTO of ‘RansomwareHelp’ Indicted for Wire Fraud",
+          "url": "https://krebsonsecurity.com/2026/11/cto-of-ransomwarehelp-indicted-for-wire-fraud/",
+          "source": "Krebs on Security",
+          "date": "2026-11-21T00:36:39Z"
+        },
+        {
+          "title": "Bell Canada says 'agentic' hacker stole enterprise customer data",
+          "url": "https://www.bleepingcomputer.com/news/security/bell-canada-says-agentic-hacker-stole-enterprise-customer-data/",
+          "source": "BleepingComputer",
+          "date": "2026-11-20T18:51:43Z"
+        },
+        {
+          "title": "Hackers use autonomous AI tool Cairn to find zero-day, take over server",
+          "url": "https://www.bleepingcomputer.com/news/security/hackers-use-autonomous-ai-tool-cairn-to-find-zero-day-take-over-server/",
+          "source": "BleepingComputer",
+          "date": "2026-11-20T17:30:00Z"
+        },
+        {
+          "title": "ISC Stormcast For Friday, November 20th, 2026",
+          "url": "https://isc.sans.edu/diary/rss/33538",
+          "source": "SANS ISC",
+          "date": "2026-11-20T02:00:02Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Network",
+      "items": [
+        {
+          "title": "How Cloudflare WAF protects against ruby2shell (CVE-2026-132825)",
+          "url": "https://blog.cloudflare.com/ruby2shell-waf-protection/",
+          "source": "Cloudflare",
+          "date": "2026-11-20T20:24:38Z"
+        },
+        {
+          "title": "How Cloudflare WAF helps protect against phpAfterShell and other critical PHP flaws",
+          "url": "https://blog.cloudflare.com/phpaftershell-waf-protection/",
+          "source": "Cloudflare",
+          "date": "2026-11-20T20:00:45Z"
+        },
+        {
+          "title": "Hint: Grab the vJunos Images If You Need Them",
+          "url": "https://blog.ipspace.net/2026/11/grab-junos-images/",
+          "source": "ipSpace.net",
+          "date": "2026-11-20T07:29:00Z"
+        },
+        {
+          "title": "What small ISPs told me about IPv6 adoption",
+          "url": "https://blog.apnic.net/2026/11/20/what-small-isps-told-me-about-ipv6-adoption/",
+          "source": "APNIC",
+          "date": "2026-11-20T04:12:28Z"
+        },
+        {
+          "title": "SIG Guidelines Review Working Group: The next phase",
+          "url": "https://blog.apnic.net/2026/11/20/sig-guidelines-review-working-group-the-next-phase/",
+          "source": "APNIC",
+          "date": "2026-11-19T22:43:15Z"
+        },
+        {
+          "title": "Is It the Network or the Website?",
+          "url": "https://labs.ripe.net/author/ciprian-lucanu/is-it-the-network-or-the-website/",
+          "source": "RIPE Labs",
+          "date": "2026-11-19T09:57:50Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Homelab",
+      "items": [
+        {
+          "title": "JEDEC Previews DDR6 Memory Standard: 2.35x More Bandwidth, 44% Narrower DIMMs",
+          "url": "https://www.servethehome.com/jedec-previews-ddr6-memory-standard-2-35x-more-bandwidth-44-narrower-dimms/",
+          "source": "ServeTheHome",
+          "date": "2026-11-20T23:40:12Z"
+        },
+        {
+          "title": "Self-Host Weekly (20 November 2026)",
+          "url": "https://selfh.st/weekly/2026-11-20/",
+          "source": "selfh.st",
+          "date": "2026-11-20T13:13:47Z"
+        },
+        {
+          "title": "GUITION ESP32-S31 development kit features 7-inch capacitive touch display, Ethernet port",
+          "url": "https://www.cnx-software.com/2026/11/20/guition-esp32-s31-development-kit-features-7-inch-capacitive-touch-display-ethernet-port/",
+          "source": "CNX Software",
+          "date": "2026-11-20T10:44:16Z"
+        },
+        {
+          "title": "M5Stack Chain Captain – An ESP32-S3 multifunctional controller with 1.54-inch color display, audio, motion sensing, IR Tx/Rx",
+          "url": "https://www.cnx-software.com/2026/11/20/m5stack-chain-captain-an-esp32-s3-multifunctional-controller-with-1-54-inch-color-display-audio-motion-sensing-ir-tx-rx/",
+          "source": "CNX Software",
+          "date": "2026-11-20T08:26:39Z"
+        },
+        {
+          "title": "November 2026 Top500 New Systems Are Few and Far Between",
+          "url": "https://www.servethehome.com/november-2026-top500-new-systems-analysis/",
+          "source": "ServeTheHome",
+          "date": "2026-11-19T17:48:48Z"
+        },
+        {
+          "title": "I joined the NTP Pool, but not with my Stratum 1 Pi",
+          "url": "https://www.jeffgeerling.com/blog/2026/i-joined-the-ntp-pool/",
+          "source": "Jeff Geerling",
+          "date": "2026-11-17T15:00:00Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Dev",
+      "items": [
+        {
+          "title": "Microsoft 365 Outage - Post Incident Report",
+          "url": "https://tianyin.github.io/misc/pir_microsoft_365_11-12-2026.pdf",
+          "source": "Lobsters",
+          "date": "2026-11-21T12:22:47Z"
+        },
+        {
+          "title": "Changes on freedesktop.org",
+          "url": "https://blog.tenstral.net/2026/11/new-fdo-website.html",
+          "source": "Lobsters",
+          "date": "2026-11-21T11:41:23Z"
+        },
+        {
+          "title": "Ask HN: I have been unemployed for 2y. 15 years of experience, US. What to do?",
+          "url": "https://news.ycombinator.com/item?id=50583761",
+          "source": "Hacker News",
+          "date": "2026-11-20T23:18:32Z"
+        },
+        {
+          "title": "NINLIVE: The Nine Inch Nails live archive",
+          "url": "https://ninlive.com/",
+          "source": "Hacker News",
+          "date": "2026-11-20T22:30:47Z"
+        },
+        {
+          "title": "[$] Bringing the Agama installer to openSUSE Tumbleweed",
+          "url": "https://lwn.net/Articles/1107830/",
+          "source": "LWN",
+          "date": "2026-11-20T14:49:13Z"
+        },
+        {
+          "title": "Beyls: Wrapping up LLVM's relicensing effort",
+          "url": "https://lwn.net/Articles/1108818/",
+          "source": "LWN",
+          "date": "2026-11-20T14:35:24Z"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
