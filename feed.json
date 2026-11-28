@@ -1,0 +1,173 @@
+{
+  "generated": "2026-11-28T16:54:31Z",
+  "columns": [
+    {
+      "title": "Security",
+      "items": [
+        {
+          "title": "Q-Dir and DesktopOK Windows utilities compromised to push Python RAT",
+          "url": "https://www.bleepingcomputer.com/news/security/q-dir-and-desktopok-windows-utilities-compromised-to-push-python-rat/",
+          "source": "BleepingComputer",
+          "date": "2026-11-28T15:32:49Z"
+        },
+        {
+          "title": "pCloud Password Manager Hit by Cyber Attack Involving Email Address Exposure and Login Attempts",
+          "url": "https://thehackernews.com/2026/11/pcloud-password-manager-hit-by-cyber.html",
+          "source": "The Hacker News",
+          "date": "2026-11-28T08:08:11Z"
+        },
+        {
+          "title": "pCloud confirms password manager hack after suspicious login alerts",
+          "url": "https://www.bleepingcomputer.com/news/security/pcloud-confirms-password-manager-hack-after-suspicious-login-alerts/",
+          "source": "BleepingComputer",
+          "date": "2026-11-27T19:26:04Z"
+        },
+        {
+          "title": "Suspected Vietnam-Linked Hackers Target Southeast Asia in South China Sea Espionage Campaign",
+          "url": "https://thehackernews.com/2026/11/suspected-vietnam-linked-hackers-target.html",
+          "source": "The Hacker News",
+          "date": "2026-11-27T16:36:11Z"
+        },
+        {
+          "title": "ISC Stormcast For Wednesday, November 25th, 2026",
+          "url": "https://isc.sans.edu/diary/rss/33554",
+          "source": "SANS ISC",
+          "date": "2026-11-25T02:00:03Z"
+        },
+        {
+          "title": "Scanning from Subnet 109.160.32.0/24",
+          "url": "https://isc.sans.edu/diary/rss/33550",
+          "source": "SANS ISC",
+          "date": "2026-11-24T02:32:00Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Network",
+      "items": [
+        {
+          "title": "Unofficial AutoCon 6 Workshop Guide",
+          "url": "https://blog.ipspace.net/2026/11/worth-reading-autocon-6-workshop/",
+          "source": "ipSpace.net",
+          "date": "2026-11-27T07:41:00Z"
+        },
+        {
+          "title": "Five things I learned in five years of attending APNIC conferences",
+          "url": "https://blog.apnic.net/2026/11/27/five-things-i-learned-in-five-years-of-attending-apnic-conferences/",
+          "source": "APNIC",
+          "date": "2026-11-26T23:16:52Z"
+        },
+        {
+          "title": "Please Help Me Find More Introduction-to-netlab Content",
+          "url": "https://blog.ipspace.net/2026/11/netlab-intro-content/",
+          "source": "ipSpace.net",
+          "date": "2026-11-26T07:06:00Z"
+        },
+        {
+          "title": "DNS topics at IETF 127",
+          "url": "https://blog.apnic.net/2026/11/26/dns-topics-at-ietf-127/",
+          "source": "APNIC",
+          "date": "2026-11-26T07:03:21Z"
+        },
+        {
+          "title": "Introducing Search for Agents",
+          "url": "https://blog.cloudflare.com/search-for-agents/",
+          "source": "Cloudflare",
+          "date": "2026-11-25T14:00:00Z"
+        },
+        {
+          "title": "Probing DNS at Cloudflare",
+          "url": "https://blog.cloudflare.com/probing-dns-at-cloudflare/",
+          "source": "Cloudflare",
+          "date": "2026-11-23T14:00:00Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Homelab",
+      "items": [
+        {
+          "title": "VZMORE iX9 Max mini PC review – Part 3: Ubuntu 26.04 Linux",
+          "url": "https://www.cnx-software.com/2026/11/28/vzmore-ix9-max-mini-pc-review-part-3-ubuntu-26-04-linux/",
+          "source": "CNX Software",
+          "date": "2026-11-28T08:06:38Z"
+        },
+        {
+          "title": "JetKVM Mini W Review A Simple and Small Wireless External KVM Device",
+          "url": "https://www.servethehome.com/jetkvm-mini-w-review-a-simple-and-small-wireless-external-kvm-device/",
+          "source": "ServeTheHome",
+          "date": "2026-11-27T21:45:21Z"
+        },
+        {
+          "title": "Self-Host Weekly (27 November 2026)",
+          "url": "https://selfh.st/weekly/2026-11-27/",
+          "source": "selfh.st",
+          "date": "2026-11-27T13:03:16Z"
+        },
+        {
+          "title": "ShiMetaPi Pico-G1 – A compact AI Vision Linux SBC powered by GOKE GK7206 4K camera SoC",
+          "url": "https://www.cnx-software.com/2026/11/27/shimetapi-pico-g1-a-compact-ai-vision-linux-sbc-powered-by-goke-gk7206-4k-camera-soc/",
+          "source": "CNX Software",
+          "date": "2026-11-27T10:37:36Z"
+        },
+        {
+          "title": "Remotely unplugging a USB device on my Mac, without touching it",
+          "url": "https://www.jeffgeerling.com/blog/2026/remote-control-usb-hub/",
+          "source": "Jeff Geerling",
+          "date": "2026-11-27T05:18:00Z"
+        },
+        {
+          "title": "Kioxia Announces GP2 Series SSD with Over 18 Million Random Read IOPS",
+          "url": "https://www.servethehome.com/kioxia-gp2-series-ssd/",
+          "source": "ServeTheHome",
+          "date": "2026-11-27T04:08:01Z"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "title": "Dev",
+      "items": [
+        {
+          "title": "Spotify September Outage: What we learnt",
+          "url": "https://engineering.atspotify.com/2026/11/september-29-outage-incident-report-what-we-learnt",
+          "source": "Lobsters",
+          "date": "2026-11-28T16:00:29Z"
+        },
+        {
+          "title": "Atari Homebrew Awards Cancelled",
+          "url": "https://forums.atariage.com/topic/394894-atari-homebrew-awards-cancelled/",
+          "source": "Lobsters",
+          "date": "2026-11-28T15:50:53Z"
+        },
+        {
+          "title": "Audible removes download option for purchased audiobooks",
+          "url": "https://consumerrights.wiki/w/Audible_removes_download_option_for_purchased_audiobooks",
+          "source": "Hacker News",
+          "date": "2026-11-28T11:51:27Z"
+        },
+        {
+          "title": "Farewell",
+          "url": "https://github.com/p-e-w/heretic/issues/601",
+          "source": "Hacker News",
+          "date": "2026-11-28T11:42:26Z"
+        },
+        {
+          "title": "Security updates for Friday",
+          "url": "https://lwn.net/Articles/1110189/",
+          "source": "LWN",
+          "date": "2026-11-27T14:22:47Z"
+        },
+        {
+          "title": "Security updates for Thursday",
+          "url": "https://lwn.net/Articles/1109990/",
+          "source": "LWN",
+          "date": "2026-11-26T14:06:22Z"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
